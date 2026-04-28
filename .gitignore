@@ -1,0 +1,21 @@
+# Build output
+bin/
+obj/
+output/setup/
+
+# User/local files
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Logs and temporary files
+*.log
+*.tmp
+*.cache
+
+# OS files
+Thumbs.db
+Desktop.ini
