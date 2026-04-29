@@ -1,0 +1,111 @@
+{
+  "Id": "0aaf0536b0c94b658f44a29cff6363dd",
+  "Title": "اختبار تجريبي في الحاسب واللغة العربية",
+  "DurationMinutes": 5,
+  "Questions": [
+    {
+      "Id": "78a9de2f31704a9583d5333e22f009f2",
+      "Text": "ما وظيفة وحدة المعالجة المركزية (CPU)؟",
+      "Choices": [
+        {
+          "Id": "6e1a87f1e4c14f4a9ca180eb822e3326",
+          "Text": "تنفيذ العمليات والتعليمات",
+          "IsCorrect": false
+        },
+        {
+          "Id": "de3e0e90285e41cb9eb2b694526eb55c",
+          "Text": "تخزين الصور فقط",
+          "IsCorrect": false
+        },
+        {
+          "Id": "f0460496f378436f841098190753f45d",
+          "Text": "عرض الفيديو",
+          "IsCorrect": false
+        },
+        {
+          "Id": "5f60e938729448f7aabd7fb5cfbec5fb",
+          "Text": "تشغيل الإنترنت",
+          "IsCorrect": true
+        }
+      ]
+    },
+    {
+      "Id": "q2",
+      "Text": "أي من التالي يعتبر نظام تشغيل؟",
+      "Choices": [
+        {
+          "Id": "q2-a",
+          "Text": "Windows",
+          "IsCorrect": true
+        },
+        {
+          "Id": "q2-b",
+          "Text": "Google",
+          "IsCorrect": false
+        },
+        {
+          "Id": "q2-c",
+          "Text": "Chrome",
+          "IsCorrect": false
+        },
+        {
+          "Id": "q2-d",
+          "Text": "Facebook",
+          "IsCorrect": false
+        }
+      ]
+    },
+    {
+      "Id": "q3",
+      "Text": "ما معنى RAM؟",
+      "Choices": [
+        {
+          "Id": "q3-a",
+          "Text": "ذاكرة الوصول العشوائي",
+          "IsCorrect": true
+        },
+        {
+          "Id": "q3-b",
+          "Text": "وحدة المعالجة",
+          "IsCorrect": false
+        },
+        {
+          "Id": "q3-c",
+          "Text": "القرص الصلب",
+          "IsCorrect": false
+        },
+        {
+          "Id": "q3-d",
+          "Text": "كرت الشاشة",
+          "IsCorrect": false
+        }
+      ]
+    },
+    {
+      "Id": "5264e06f4ed74d07a1a49dd2969c29ea",
+      "Text": "ما عاصمة مصر؟",
+      "Choices": [
+        {
+          "Id": "1959e3105af545ba83e83e63567b59c8",
+          "Text": "القاهرة",
+          "IsCorrect": false
+        },
+        {
+          "Id": "ba353d5a82214024824e7dff53e23790",
+          "Text": "الإسكندرية",
+          "IsCorrect": true
+        },
+        {
+          "Id": "bc040a2126524e45a7c7fcf87124b44f",
+          "Text": "أسوان",
+          "IsCorrect": false
+        },
+        {
+          "Id": "037e8c6a5d7649ecb23dc4058267386e",
+          "Text": "الجيزة",
+          "IsCorrect": false
+        }
+      ]
+    }
+  ]
+}
