@@ -1,0 +1,85 @@
+{
+  "Id": "80328bdcea574f26801a31e40ac02dcd",
+  "Title": "English Sample Exam",
+  "DurationMinutes": 10,
+  "Questions": [
+    {
+      "Id": "q1",
+      "Text": "What does CPU stand for?",
+      "Choices": [
+        {
+          "Id": "q1-a",
+          "Text": "Central Processing Unit",
+          "IsCorrect": true
+        },
+        {
+          "Id": "q1-b",
+          "Text": "Computer Personal Unit",
+          "IsCorrect": false
+        },
+        {
+          "Id": "q1-c",
+          "Text": "Central Program User",
+          "IsCorrect": false
+        },
+        {
+          "Id": "q1-d",
+          "Text": "Control Processing Utility",
+          "IsCorrect": false
+        }
+      ]
+    },
+    {
+      "Id": "q2",
+      "Text": "Which file format is used in this MVP for exams?",
+      "Choices": [
+        {
+          "Id": "q2-a",
+          "Text": "JSON",
+          "IsCorrect": true
+        },
+        {
+          "Id": "q2-b",
+          "Text": "MP3",
+          "IsCorrect": false
+        },
+        {
+          "Id": "q2-c",
+          "Text": "PNG",
+          "IsCorrect": false
+        },
+        {
+          "Id": "q2-d",
+          "Text": "EXE",
+          "IsCorrect": false
+        }
+      ]
+    },
+    {
+      "Id": "e3cbb1b28f794853956b9959c61335f3",
+      "Text": "what",
+      "Choices": [
+        {
+          "Id": "deeccdc7cafd48f29213ce3c2303e71a",
+          "Text": "akaka",
+          "IsCorrect": false
+        },
+        {
+          "Id": "7af3934fd613457ba59193bea0fc2d5c",
+          "Text": "assssss",
+          "IsCorrect": false
+        },
+        {
+          "Id": "a9f53b1bb2a745f095aa7bae5c1005b3",
+          "Text": "cccccccc",
+          "IsCorrect": true
+        },
+        {
+          "Id": "8f80b43ab7f240658ec439c618256771",
+          "Text": "qqqq",
+          "IsCorrect": false
+        }
+      ]
+    }
+  ]
+}

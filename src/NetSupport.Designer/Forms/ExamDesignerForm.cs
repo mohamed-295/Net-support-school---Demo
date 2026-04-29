@@ -18,6 +18,7 @@ public sealed class ExamDesignerForm : Form
     private readonly ExamDesignerService _service = new();
 
     private const string ExamsFolder = "samples/exams";
+    private int editingIndex = -1;
 
     public ExamDesignerForm()
     {
@@ -94,6 +95,8 @@ public sealed class ExamDesignerForm : Form
 
         var btnLoad = new Button { Text = "Load Exam", Dock = DockStyle.Bottom };
         btnLoad.Click += LoadExam;
+
+        lstQuestions.DoubleClick += EditQuestion;
 
         bottomPanel.Controls.Add(lstQuestions);
         bottomPanel.Controls.Add(btnSave);
@@ -201,5 +204,26 @@ public sealed class ExamDesignerForm : Form
         lstQuestions.Items.Clear();
         foreach (var q in questions)
             lstQuestions.Items.Add(q.Text);
+    }
+
+    private void EditQuestion(object? sender, EventArgs e)
+    {
+        if (lstQuestions.SelectedIndex < 0)
+            return;
+
+        editingIndex = lstQuestions.SelectedIndex;
+
+        var existing = questions[editingIndex];
+
+        using var editor = new QuestionEditorForm(existing);
+
+        if (editor.ShowDialog() == DialogResult.OK && editor.Result != null)
+        {
+            questions[editingIndex] = editor.Result;
+
+            lstQuestions.Items[editingIndex] = editor.Result.Text;
+        }
+
+        editingIndex = -1;
     }
 }

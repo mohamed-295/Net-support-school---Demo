@@ -8,12 +8,15 @@ public sealed class ExamDesignerService
     public string BuildPath(string folder, string title)
     {
         Directory.CreateDirectory(folder);
-        return Path.Combine(folder, $"{title.Replace(" ", "_")}.json");
+
+        var fileName = JsonFileStore.NormalizeFileName(title) + ".json";
+
+        return Path.Combine(folder, fileName);
     }
 
     public Task SaveExamAsync(string path, Exam exam)
     {
-        return JsonFileStore.SaveAsync(path, exam);
+        return JsonFileStore.SaveAsync(path, exam, overwrite: true);
     }
 
     public Task<Exam?> LoadExamAsync(string path)

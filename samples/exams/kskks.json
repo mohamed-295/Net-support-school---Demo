@@ -1,0 +1,33 @@
+{
+  "Id": "42a4ecce887e4abc9ad145ed55a850a5",
+  "Title": "kskks",
+  "DurationMinutes": 10,
+  "Questions": [
+    {
+      "Id": "f93343c06a964a2bb5caeefda12a089b",
+      "Text": "wha",
+      "Choices": [
+        {
+          "Id": "a050f017db114cf1b75bc66d34fd56f7",
+          "Text": "kk",
+          "IsCorrect": false
+        },
+        {
+          "Id": "2b02d559ca4843ddb4a534a9e5fee8b6",
+          "Text": "aaa",
+          "IsCorrect": false
+        },
+        {
+          "Id": "910f850ad44541ada12bb30bf3f35465",
+          "Text": "aa",
+          "IsCorrect": true
+        },
+        {
+          "Id": "2f6e3b8693bf4ebda0aa24c832173515",
+          "Text": "xxxxxx",
+          "IsCorrect": false
+        }
+      ]
+    }
+  ]
+}

@@ -25,15 +25,26 @@ public static class JsonFileStore
         return await JsonSerializer.DeserializeAsync<T>(stream, Options);
     }
 
-    public static async Task SaveAsync<T>(string path, T value)
+    public static async Task SaveAsync<T>(string path, T value, bool overwrite = true)
     {
         var directory = Path.GetDirectoryName(path);
+
         if (!string.IsNullOrWhiteSpace(directory))
-        {
             Directory.CreateDirectory(directory);
+
+        if (File.Exists(path) && overwrite)
+        {
+            File.Delete(path); // explicit overwrite behavior
         }
 
         await using var stream = File.Create(path);
         await JsonSerializer.SerializeAsync(stream, value, Options);
+    }
+    public static string NormalizeFileName(string name)
+    {
+        return name
+            .Trim()
+            .Replace(" ", "_")
+            .ToLowerInvariant();
     }
 }
