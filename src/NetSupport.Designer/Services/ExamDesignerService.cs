@@ -5,13 +5,27 @@ namespace NetSupport.Designer.Services;
 
 public sealed class ExamDesignerService
 {
-    public Task SaveExamAsync(string path, Exam exam)
+    public string BuildPath(string folder, string title)
     {
-        return JsonFileStore.SaveAsync(path, exam);
+        Directory.CreateDirectory(folder);
+
+        var fileName = JsonFileStore.NormalizeFileName(title) + ".json";
+
+        return Path.Combine(folder, fileName);
     }
 
-    public async Task<Exam> LoadExamAsync(string path)
+    public Task SaveExamAsync(string path, Exam exam)
     {
-        return await JsonFileStore.LoadAsync<Exam>(path) ?? new Exam();
+        return JsonFileStore.SaveAsync(path, exam, overwrite: true);
+    }
+
+    public Task<Exam?> LoadExamAsync(string path)
+    {
+        return JsonFileStore.LoadAsync<Exam>(path);
+    }
+
+    public bool IsValidExam(string title, List<Question> questions)
+    {
+        return !string.IsNullOrWhiteSpace(title) && questions.Count > 0;
     }
 }

@@ -1,0 +1,111 @@
+{
+  "Id": "97f4611337594a059109038df7bf03ec",
+  "Title": "اختبار تجريبي في الحاسب واللغة العربية",
+  "DurationMinutes": 5,
+  "Questions": [
+    {
+      "Id": "36a7936ff61a47c4881b91e9d29ff1f5",
+      "Text": "ما وظيفة وحدة المعالجة المركزية (CPU)؟",
+      "Choices": [
+        {
+          "Id": "6ef508a8adca4cd2a357364b95acf31a",
+          "Text": "تنفيذ العمليات والتعليمات",
+          "IsCorrect": true
+        },
+        {
+          "Id": "09675c698fd04c8784f15cc55777d3c1",
+          "Text": "تخزين الصور فقط",
+          "IsCorrect": false
+        },
+        {
+          "Id": "8275b779a60246c99a012cf8723d49ab",
+          "Text": "عرض الفيديو",
+          "IsCorrect": false
+        },
+        {
+          "Id": "e3d41169fd1d411c8afbb0b89c1829d4",
+          "Text": "تشغيل الإنترنت",
+          "IsCorrect": false
+        }
+      ]
+    },
+    {
+      "Id": "4a19ca3bb1bc431eab9e273cd8ad18d3",
+      "Text": "أي من التالي يعتبر نظام تشغيل؟",
+      "Choices": [
+        {
+          "Id": "59aca040e6314bb4b96aec5354110efd",
+          "Text": "Windows",
+          "IsCorrect": true
+        },
+        {
+          "Id": "7605613d3a4f4212b5519c43cd17fc88",
+          "Text": "Google",
+          "IsCorrect": false
+        },
+        {
+          "Id": "21fb066d2f524dc4b057933c070db0c2",
+          "Text": "Chrome",
+          "IsCorrect": false
+        },
+        {
+          "Id": "dfef7f81491c4edfb43e1cedbfec37aa",
+          "Text": "Facebook",
+          "IsCorrect": false
+        }
+      ]
+    },
+    {
+      "Id": "q3",
+      "Text": "ما معنى RAM؟",
+      "Choices": [
+        {
+          "Id": "q3-a",
+          "Text": "ذاكرة الوصول العشوائي",
+          "IsCorrect": true
+        },
+        {
+          "Id": "q3-b",
+          "Text": "وحدة المعالجة",
+          "IsCorrect": false
+        },
+        {
+          "Id": "q3-c",
+          "Text": "القرص الصلب",
+          "IsCorrect": false
+        },
+        {
+          "Id": "q3-d",
+          "Text": "كرت الشاشة",
+          "IsCorrect": false
+        }
+      ]
+    },
+    {
+      "Id": "d6d288c3058748aa99eb069597b7026b",
+      "Text": "ما عاصمة مصر؟",
+      "Choices": [
+        {
+          "Id": "5c5d91c7927b474eada764549714586c",
+          "Text": "القاهرة",
+          "IsCorrect": true
+        },
+        {
+          "Id": "c330c892e3ef4502956a11c35620c19d",
+          "Text": "الإسكندرية",
+          "IsCorrect": false
+        },
+        {
+          "Id": "88d97b31c2c245959f636f8dc7b4f4e4",
+          "Text": "أسوان",
+          "IsCorrect": false
+        },
+        {
+          "Id": "ac2a52a801dd4daba4d91c622daac959",
+          "Text": "الجيزة",
+          "IsCorrect": false
+        }
+      ]
+    }
+  ]
+}

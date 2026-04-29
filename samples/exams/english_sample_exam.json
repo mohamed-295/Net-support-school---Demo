@@ -1,0 +1,59 @@
+{
+  "Id": "369982a034d345f491daa597aaf05359",
+  "Title": "English Sample Exam",
+  "DurationMinutes": 10,
+  "Questions": [
+    {
+      "Id": "c0ab9d5b8db34f74a8113119411f2e94",
+      "Text": "What does CPU stand for?",
+      "Choices": [
+        {
+          "Id": "2caea9cf106f4aef9470ac4a56452cbd",
+          "Text": "Central Processing Unit",
+          "IsCorrect": false
+        },
+        {
+          "Id": "5e36d21989b649d7af336404edeaeeb3",
+          "Text": "Computer Personal Unit",
+          "IsCorrect": false
+        },
+        {
+          "Id": "7b60828462b34022903483d8c7559a93",
+          "Text": "Central Program User",
+          "IsCorrect": false
+        },
+        {
+          "Id": "c80407f8fa5246a2a11ca2b3c5c74eba",
+          "Text": "Control Processing Utility",
+          "IsCorrect": true
+        }
+      ]
+    },
+    {
+      "Id": "q2",
+      "Text": "Which file format is used in this MVP for exams?",
+      "Choices": [
+        {
+          "Id": "q2-a",
+          "Text": "JSON",
+          "IsCorrect": true
+        },
+        {
+          "Id": "q2-b",
+          "Text": "MP3",
+          "IsCorrect": false
+        },
+        {
+          "Id": "q2-c",
+          "Text": "PNG",
+          "IsCorrect": false
+        },
+        {
+          "Id": "q2-d",
+          "Text": "EXE",
+          "IsCorrect": false
+        }
+      ]
+    }
+  ]
+}

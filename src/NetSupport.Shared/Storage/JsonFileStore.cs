@@ -1,5 +1,6 @@
 using System.Text.Json;
-
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 namespace NetSupport.Shared.Storage;
 
 public static class JsonFileStore
@@ -7,7 +8,10 @@ public static class JsonFileStore
     private static readonly JsonSerializerOptions Options = new()
     {
         PropertyNameCaseInsensitive = true,
-        WriteIndented = true
+        WriteIndented = true,
+        
+        // Preserve Arabic characters as-is — do NOT escape to \uXXXX.
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
 
     public static async Task<T?> LoadAsync<T>(string path)
@@ -21,15 +25,26 @@ public static class JsonFileStore
         return await JsonSerializer.DeserializeAsync<T>(stream, Options);
     }
 
-    public static async Task SaveAsync<T>(string path, T value)
+    public static async Task SaveAsync<T>(string path, T value, bool overwrite = true)
     {
         var directory = Path.GetDirectoryName(path);
+
         if (!string.IsNullOrWhiteSpace(directory))
-        {
             Directory.CreateDirectory(directory);
+
+        if (File.Exists(path) && overwrite)
+        {
+            File.Delete(path); // explicit overwrite behavior
         }
 
         await using var stream = File.Create(path);
         await JsonSerializer.SerializeAsync(stream, value, Options);
+    }
+    public static string NormalizeFileName(string name)
+    {
+        return name
+            .Trim()
+            .Replace(" ", "_")
+            .ToLowerInvariant();
     }
 }

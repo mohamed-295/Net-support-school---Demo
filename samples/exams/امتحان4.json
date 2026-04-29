@@ -1,0 +1,85 @@
+{
+  "Id": "37aa377ed9894411a891e53e14b3a904",
+  "Title": "امتحان4",
+  "DurationMinutes": 3,
+  "Questions": [
+    {
+      "Id": "a6c0454408084cc293d2d169deba0e57",
+      "Text": "من هو مؤسس علم النحو؟",
+      "Choices": [
+        {
+          "Id": "fecd393bee1542819eeed092e2fb4ea7",
+          "Text": "ابو الاسود الدؤلي",
+          "IsCorrect": false
+        },
+        {
+          "Id": "a4120171696a40e39e288d4ad6dee244",
+          "Text": "سيبويه",
+          "IsCorrect": false
+        },
+        {
+          "Id": "d848817f35ea43ac905003259c751280",
+          "Text": "عباس بن فرناس",
+          "IsCorrect": true
+        },
+        {
+          "Id": "8a9fe0536e47467f959bc9d17bd34bd5",
+          "Text": "محمد علي",
+          "IsCorrect": false
+        }
+      ]
+    },
+    {
+      "Id": "04fe39d3708d439dad8c755b18258c9f",
+      "Text": "ما هي عاصمة لبنان",
+      "Choices": [
+        {
+          "Id": "99ed53ae41ad44b39fd772a0465e82f6",
+          "Text": "القاهره",
+          "IsCorrect": false
+        },
+        {
+          "Id": "e0673df78ba44873b34f113a792a2245",
+          "Text": "سوريا",
+          "IsCorrect": false
+        },
+        {
+          "Id": "885bf08d384142989b048fa6073d9071",
+          "Text": "بيروت",
+          "IsCorrect": true
+        },
+        {
+          "Id": "cfcdf98065f94e6e9770b06737438577",
+          "Text": "الاسكندرية",
+          "IsCorrect": false
+        }
+      ]
+    },
+    {
+      "Id": "5befcf0357c946ae948c7ba84047d2c1",
+      "Text": "zz",
+      "Choices": [
+        {
+          "Id": "3ec7c5c1347e41ca8e7d42eb003013eb",
+          "Text": "akak",
+          "IsCorrect": true
+        },
+        {
+          "Id": "d6582a2f1341431cb0a0623904adfb16",
+          "Text": "aaaaaaa",
+          "IsCorrect": false
+        },
+        {
+          "Id": "2caea58c19544759ac8e784fb19a6d02",
+          "Text": "qqqqqqqqq",
+          "IsCorrect": false
+        },
+        {
+          "Id": "75dc1326992e400a94f9bbd4f5543078",
+          "Text": "qqqqq",
+          "IsCorrect": false
+        }
+      ]
+    }
+  ]
+}
