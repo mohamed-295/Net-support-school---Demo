@@ -6,6 +6,10 @@ public sealed class TestSessionManager
 {
     public TestSession? ActiveSession { get; private set; }
 
+    public bool HasActiveSession =>
+        ActiveSession is not null &&
+        string.Equals(ActiveSession.Status, "Running", StringComparison.OrdinalIgnoreCase);
+
     public TestSession CreateSession(Exam exam, int durationMinutes, IEnumerable<string> studentIds)
     {
         ActiveSession = new TestSession
@@ -13,7 +17,8 @@ public sealed class TestSessionManager
             Exam = exam,
             DurationMinutes = durationMinutes,
             StudentIds = studentIds.ToList(),
-            Status = "Running"
+            Status = "Running",
+            StartedAtUtc = DateTime.UtcNow
         };
 
         return ActiveSession;
