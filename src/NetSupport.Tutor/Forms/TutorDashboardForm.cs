@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using NetSupport.Shared.Models;
+using NetSupport.Tutor.Server;
 using NetSupport.Tutor.Services;
 
 namespace NetSupport.Tutor.Forms;
@@ -7,6 +8,8 @@ namespace NetSupport.Tutor.Forms;
 public sealed class TutorDashboardForm : Form
 {
     private readonly StudentRegistry _studentRegistry;
+    private readonly TutorServer _tutorServer;
+    private readonly TestSessionManager _testSessionManager;
     private readonly DataGridView _gridStudents;
     private readonly System.Windows.Forms.Timer _refreshTimer;
 
@@ -23,6 +26,8 @@ public sealed class TutorDashboardForm : Form
         WindowState = FormWindowState.Maximized;
 
         _studentRegistry = new StudentRegistry();
+        _tutorServer = new TutorServer();
+        _testSessionManager = new TestSessionManager();
 
         // ================= Layout =================
         var mainPanel = new TableLayoutPanel
@@ -202,7 +207,7 @@ public sealed class TutorDashboardForm : Form
     {
         if (_selectedStudent == null) return;
 
-        using var form = new TestSetupForm();
+        using var form = new TestSetupForm(_studentRegistry, _tutorServer, _testSessionManager);
         form.ShowDialog(this);
     }
 
@@ -239,10 +244,10 @@ public sealed class TutorDashboardForm : Form
     {
         var students = new[]
         {
-            new StudentInfo { FullName="Ahmed Hassan", MachineName="PC-LAB-01", Status="Active", AnsweredCount=12, Score=85, LastSeenUtc=DateTime.UtcNow.AddSeconds(-5)},
-            new StudentInfo { FullName="Fatima Mohamed", MachineName="PC-LAB-02", Status="In Test", AnsweredCount=8, Score=72, LastSeenUtc=DateTime.UtcNow.AddSeconds(-30)},
-            new StudentInfo { FullName="Omar Ali", MachineName="PC-LAB-03", Status="Idle", AnsweredCount=0, Score=0, LastSeenUtc=DateTime.UtcNow.AddMinutes(-2)},
-            new StudentInfo { FullName="Noor Khalid", MachineName="PC-LAB-04", Status="Active", AnsweredCount=20, Score=95, LastSeenUtc=DateTime.UtcNow.AddSeconds(-15)}
+            new StudentInfo { StudentId="ST-001", FullName="Ahmed Hassan", MachineName="PC-LAB-01", Status="Active", AnsweredCount=12, Score=85, LastSeenUtc=DateTime.UtcNow.AddSeconds(-5)},
+            new StudentInfo { StudentId="ST-002", FullName="Fatima Mohamed", MachineName="PC-LAB-02", Status="In Test", AnsweredCount=8, Score=72, LastSeenUtc=DateTime.UtcNow.AddSeconds(-30)},
+            new StudentInfo { StudentId="ST-003", FullName="Omar Ali", MachineName="PC-LAB-03", Status="Idle", AnsweredCount=0, Score=0, LastSeenUtc=DateTime.UtcNow.AddMinutes(-2)},
+            new StudentInfo { StudentId="ST-004", FullName="Noor Khalid", MachineName="PC-LAB-04", Status="Active", AnsweredCount=20, Score=95, LastSeenUtc=DateTime.UtcNow.AddSeconds(-15)}
         };
 
         foreach (var s in students)
