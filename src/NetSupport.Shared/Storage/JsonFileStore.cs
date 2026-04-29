@@ -1,5 +1,6 @@
 using System.Text.Json;
-
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 namespace NetSupport.Shared.Storage;
 
 public static class JsonFileStore
@@ -7,7 +8,10 @@ public static class JsonFileStore
     private static readonly JsonSerializerOptions Options = new()
     {
         PropertyNameCaseInsensitive = true,
-        WriteIndented = true
+        WriteIndented = true,
+        
+        // Preserve Arabic characters as-is — do NOT escape to \uXXXX.
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
 
     public static async Task<T?> LoadAsync<T>(string path)

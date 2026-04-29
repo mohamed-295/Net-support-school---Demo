@@ -1,0 +1,59 @@
+{
+  "Id": "56e0aa2ded3947e3b4894d424bd34678",
+  "Title": "امتحان3",
+  "DurationMinutes": 9,
+  "Questions": [
+    {
+      "Id": "010cc81555964006926262f0bae8571e",
+      "Text": "رابع كوكوب في المجموعه الشمسيه",
+      "Choices": [
+        {
+          "Id": "6ca46fc2afc245c5839c489dd2fac8b9",
+          "Text": "عطارد",
+          "IsCorrect": false
+        },
+        {
+          "Id": "3d9e3f82c09e4f73bd98f15839fae0ed",
+          "Text": "زحل",
+          "IsCorrect": false
+        },
+        {
+          "Id": "3aea243cd31a4dc6acda5fab10333b3c",
+          "Text": "المريخ",
+          "IsCorrect": true
+        },
+        {
+          "Id": "64c9377c74594b048b1525a7d81102a0",
+          "Text": "الارض",
+          "IsCorrect": false
+        }
+      ]
+    },
+    {
+      "Id": "4c0fa070389f439395f6805a481daec1",
+      "Text": "المجموعة الشمسيه تحتوي على كام نجم",
+      "Choices": [
+        {
+          "Id": "43a3172732134ff8a757063dab36d204",
+          "Text": "14",
+          "IsCorrect": false
+        },
+        {
+          "Id": "55ce7baef5d14ac18f017b3b6cd44987",
+          "Text": "50",
+          "IsCorrect": false
+        },
+        {
+          "Id": "a0a6e405434d467aa3fda7691e95642d",
+          "Text": "1",
+          "IsCorrect": true
+        },
+        {
+          "Id": "db68511051c447da850c920fc9b3c9f8",
+          "Text": "5",
+          "IsCorrect": false
+        }
+      ]
+    }
+  ]
+}

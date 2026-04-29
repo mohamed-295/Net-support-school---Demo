@@ -1,0 +1,59 @@
+{
+  "Id": "198534f857fa47de96a8fd634e125a57",
+  "Title": "امتحان4",
+  "DurationMinutes": 3,
+  "Questions": [
+    {
+      "Id": "4d0c24a1387c45bb87a32d0e5acd93ef",
+      "Text": "من هو مؤسس علم النحو؟",
+      "Choices": [
+        {
+          "Id": "b2fbb45f830e41a0b8b8fd189e8fe7d9",
+          "Text": "ابو الاسود الدؤلي",
+          "IsCorrect": false
+        },
+        {
+          "Id": "5f28853db7f442da8b607220e0184bcd",
+          "Text": "سيبويه",
+          "IsCorrect": true
+        },
+        {
+          "Id": "f80a2506bffe407e9fbbcc9720a59730",
+          "Text": "عباس بن فرناس",
+          "IsCorrect": false
+        },
+        {
+          "Id": "cafac1920fa447f99b3f2fe182c4a5c6",
+          "Text": "محمد علي",
+          "IsCorrect": false
+        }
+      ]
+    },
+    {
+      "Id": "04fe39d3708d439dad8c755b18258c9f",
+      "Text": "ما هي عاصمة لبنان",
+      "Choices": [
+        {
+          "Id": "99ed53ae41ad44b39fd772a0465e82f6",
+          "Text": "القاهره",
+          "IsCorrect": false
+        },
+        {
+          "Id": "e0673df78ba44873b34f113a792a2245",
+          "Text": "سوريا",
+          "IsCorrect": false
+        },
+        {
+          "Id": "885bf08d384142989b048fa6073d9071",
+          "Text": "بيروت",
+          "IsCorrect": true
+        },
+        {
+          "Id": "cfcdf98065f94e6e9770b06737438577",
+          "Text": "الاسكندرية",
+          "IsCorrect": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "Id": "a294b8ef7fd24efdbc71349bb8576dbf",
+  "Title": "exam55",
+  "DurationMinutes": 4,
+  "Questions": [
+    {
+      "Id": "2e290216453644e7b66b0990a13ab18e",
+      "Text": "1 + 3",
+      "Choices": [
+        {
+          "Id": "18fce2bfc9244fe889171845a8018ae7",
+          "Text": "8",
+          "IsCorrect": false
+        },
+        {
+          "Id": "780da30e81504a699f866eb1283e9f42",
+          "Text": "9",
+          "IsCorrect": false
+        },
+        {
+          "Id": "f21391b7a8d24507bd7f88eda6c19d4e",
+          "Text": "4",
+          "IsCorrect": true
+        },
+        {
+          "Id": "8dd79fd327114324b974407830056242",
+          "Text": "6",
+          "IsCorrect": false
+        }
+      ]
+    },
+    {
+      "Id": "f016648577e741bf81712c11dc8b7f46",
+      "Text": "idk",
+      "Choices": [
+        {
+          "Id": "44116201065a43168b188a51cc962d49",
+          "Text": "i don't care",
+          "IsCorrect": false
+        },
+        {
+          "Id": "7938d85842f14f72a40378b4811ba286",
+          "Text": "i don't know",
+          "IsCorrect": true
+        },
+        {
+          "Id": "48230abd495047d8b2e472bffb6397ee",
+          "Text": "i",
+          "IsCorrect": false
+        },
+        {
+          "Id": "c4cced607bea48808b45a0db2304afa9",
+          "Text": "don't",
+          "IsCorrect": false
+        }
+      ]
+    },
+    {
+      "Id": "1c4b7ff90fba4c919cef7c458ce7574b",
+      "Text": "الماء سر ...؟",
+      "Choices": [
+        {
+          "Id": "7cdf7e2b86334a0c831a845eb3e01cac",
+          "Text": "الموت",
+          "IsCorrect": false
+        },
+        {
+          "Id": "df3d3a2d4e374f9ba9e83914a7460328",
+          "Text": "التفاح",
+          "IsCorrect": false
+        },
+        {
+          "Id": "a880791e9f3e4291ab6a8c5129b8d4bc",
+          "Text": "الحياه",
+          "IsCorrect": true
+        },
+        {
+          "Id": "c35511d939b141a387368c87b9d32b4e",
+          "Text": "اي حاجه",
+          "IsCorrect": false
+        }
+      ]
+    }
+  ]
+}
