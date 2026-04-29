@@ -1,3 +1,5 @@
+using NetSupport.Tutor.Server;
+using NetSupport.Tutor.Forms;
 namespace NetSupport.Tutor;
 
 internal static class Program
@@ -6,6 +8,13 @@ internal static class Program
     private static void Main()
     {
         ApplicationConfiguration.Initialize();
-        Application.Run(new Forms.TutorDashboardForm());
+        var tutorServer = new TutorServer();
+
+        // Start server WITHOUT await
+        tutorServer.StartAsync().GetAwaiter().GetResult();
+        Application.Run(new TutorDashboardForm());
+
+        tutorServer.StopAsync().GetAwaiter().GetResult();
+        
     }
 }

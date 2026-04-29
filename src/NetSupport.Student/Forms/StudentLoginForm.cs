@@ -65,7 +65,7 @@ public sealed class StudentLoginForm : Form
         Controls.AddRange(controlsArray);
     }
 
-    private async void BtnConnect_Click(object sender, EventArgs e)
+    private async void BtnConnect_Click(object? sender, EventArgs e)
     {
         if (string.IsNullOrWhiteSpace(txtFullName.Text) || string.IsNullOrWhiteSpace(txtStudentId.Text))
         {
