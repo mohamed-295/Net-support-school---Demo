@@ -12,7 +12,7 @@ public sealed class ExamDesignerForm : Form
     private TextBox txtQuestion = null!;
     private TextBox[] txtChoices = null!;
     private ComboBox cmbCorrect = null!;
-    private ListBox lstQuestions = null!;
+    private ListView lstQuestions = null!;
 
     private List<Question> questions = new();
     private readonly ExamDesignerService _service = new();
@@ -88,7 +88,14 @@ public sealed class ExamDesignerForm : Form
         // ===== Bottom Panel =====
         var bottomPanel = new Panel { Dock = DockStyle.Fill };
 
-        lstQuestions = new ListBox { Dock = DockStyle.Fill };
+        lstQuestions = new ListView
+        {
+            Dock = DockStyle.Fill,
+            View = View.Details,
+            FullRowSelect = true
+        };
+
+        lstQuestions.Columns.Add("Question", -2);
 
         var btnSave = new Button { Text = "Save Exam", Dock = DockStyle.Bottom };
         btnSave.Click += SaveExam;
@@ -96,11 +103,27 @@ public sealed class ExamDesignerForm : Form
         var btnLoad = new Button { Text = "Load Exam", Dock = DockStyle.Bottom };
         btnLoad.Click += LoadExam;
 
+        var panelButtons = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Bottom,
+            Height = 40
+        };
+
+        var btnEdit = new Button { Text = "✏ Edit" };
+        var btnDelete = new Button { Text = "🗑 Delete" };
+
+        btnEdit.Click += EditQuestion;
+        btnDelete.Click += DeleteQuestion;
+
+        panelButtons.Controls.Add(btnEdit);
+        panelButtons.Controls.Add(btnDelete);
+
         lstQuestions.DoubleClick += EditQuestion;
 
         bottomPanel.Controls.Add(lstQuestions);
         bottomPanel.Controls.Add(btnSave);
         bottomPanel.Controls.Add(btnLoad);
+        bottomPanel.Controls.Add(panelButtons);
 
         main.Controls.Add(topPanel, 0, 0);
         main.Controls.Add(bottomPanel, 0, 1);
@@ -147,7 +170,7 @@ public sealed class ExamDesignerForm : Form
         };
 
         questions.Add(question);
-        lstQuestions.Items.Add(txtQuestion.Text);
+        lstQuestions.Items.Add(new ListViewItem(question.Text));
 
         // Clear inputs
         txtQuestion.Clear();
@@ -208,22 +231,39 @@ public sealed class ExamDesignerForm : Form
 
     private void EditQuestion(object? sender, EventArgs e)
     {
-        if (lstQuestions.SelectedIndex < 0)
+        if (lstQuestions.SelectedIndices.Count == 0)
             return;
 
-        editingIndex = lstQuestions.SelectedIndex;
+        int index = lstQuestions.SelectedIndices[0];
 
-        var existing = questions[editingIndex];
+        var existing = questions[index];
 
         using var editor = new QuestionEditorForm(existing);
 
         if (editor.ShowDialog() == DialogResult.OK && editor.Result != null)
         {
-            questions[editingIndex] = editor.Result;
+            questions[index] = editor.Result;
 
-            lstQuestions.Items[editingIndex] = editor.Result.Text;
+            lstQuestions.Items[index].Text = editor.Result.Text;
         }
+    }
 
-        editingIndex = -1;
+    private void DeleteQuestion(object? sender, EventArgs e)
+    {
+        if (lstQuestions.SelectedIndices.Count == 0)
+            return;
+
+        int index = lstQuestions.SelectedIndices[0];
+
+        var result = MessageBox.Show(
+            "Delete this question?",
+            "Confirm",
+            MessageBoxButtons.YesNo);
+
+        if (result != DialogResult.Yes)
+            return;
+
+        questions.RemoveAt(index);
+        lstQuestions.Items.RemoveAt(index);
     }
 }
