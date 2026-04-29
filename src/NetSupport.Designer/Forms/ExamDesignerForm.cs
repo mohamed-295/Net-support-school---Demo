@@ -18,7 +18,7 @@ public sealed class ExamDesignerForm : Form
     private readonly ExamDesignerService _service = new();
 
     private const string ExamsFolder = "samples/exams";
-    private int editingIndex = -1;
+    
 
     public ExamDesignerForm()
     {
@@ -109,8 +109,19 @@ public sealed class ExamDesignerForm : Form
             Height = 40
         };
 
-        var btnEdit = new Button { Text = "✏ Edit" };
-        var btnDelete = new Button { Text = "🗑 Delete" };
+        var btnEdit = new Button 
+        { 
+            Text = "✏ Edit",
+            Width = 120,
+            Height = 40
+        };
+
+        var btnDelete = new Button 
+        { 
+            Text = "🗑 Delete",
+            Width = 120,
+            Height = 40
+        };
 
         btnEdit.Click += EditQuestion;
         btnDelete.Click += DeleteQuestion;
