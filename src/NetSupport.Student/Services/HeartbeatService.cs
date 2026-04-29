@@ -1,10 +1,21 @@
-using NetSupport.Shared.Models;
+using System;
+using System.Threading.Tasks;
+
 
 namespace NetSupport.Student.Services;
 
-// Placeholder — Member 4 will implement the real heartbeat timer here.
-// See docs/TutorHub_Guide.md for how to wire this up with StudentClient.
 public sealed class HeartbeatService
 {
-    public TimeSpan Interval { get; } = TimeSpan.FromSeconds(5);
+    private readonly System.Windows.Forms.Timer _timer;
+    private readonly Func<Task> _onTick;
+
+    public HeartbeatService(Func<Task> onTick)
+    {
+        _onTick = onTick;
+        _timer = new System.Windows.Forms.Timer { Interval = 5000 }; 
+        _timer.Tick += async (s, e) => await _onTick();
+    }
+
+    public void Start() => _timer.Start();
+    public void Stop() => _timer.Stop();
 }
