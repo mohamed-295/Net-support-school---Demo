@@ -35,8 +35,8 @@ public sealed class StudentLoginForm : Form
         txtStudentId = new TextBox { Location = new Point(centerX, 180), Width = 450, Font = new Font("Segoe UI", 11) };
 
         Label lblUrl = new Label { Text = "Tutor Server URL:", Font = new Font("Segoe UI", 10), Location = new Point(centerX, 220), AutoSize = true };
-        txtTutorUrl = new TextBox { Location = new Point(centerX, 245), Width = 450, Font = new Font("Segoe UI", 11), Text = "http://localhost:5000/tutorHub" };
-
+        txtTutorUrl = new TextBox { Location = new Point(centerX, 245), Width = 450, Font = new Font("Segoe UI", 11), Text = "http://127.0.0.1:5000/tutorHub" };
+    
         btnConnect = new Button { 
             Text = "Connect & Login", 
             Location = new Point(centerX, 300), 

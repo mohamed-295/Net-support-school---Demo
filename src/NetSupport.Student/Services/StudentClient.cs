@@ -10,7 +10,7 @@ namespace NetSupport.Student.Services
     {
         private HubConnection _connection;
         private StudentInfo _currentStudent;
-        private System.Windows.Forms.Timer _heartbeatTimer;
+        private HeartbeatService _heartbeatService;
 
         public event Action<string> OnStatusChanged;
         public bool IsConnected => _connection?.State == HubConnectionState.Connected;
@@ -37,33 +37,27 @@ namespace NetSupport.Student.Services
             await _connection.InvokeAsync("RegisterStudent", _currentStudent);
 
             OnStatusChanged?.Invoke("Connected");
-            StartHeartbeat();
-        }
-        private void StartHeartbeat()
-        {
-            _heartbeatTimer = new System.Windows.Forms.Timer();
-            _heartbeatTimer.Interval = 5000; 
-            _heartbeatTimer.Tick += async (s, e) =>
+            _heartbeatService = new HeartbeatService(async () =>
             {
                 if (IsConnected && _currentStudent != null)
                 {
                     try
                     {
-                        await _connection.InvokeAsync("SendHeartbeat", _currentStudent.StudentId);
+                        await _connection.InvokeAsync("SendHeartbeat", _currentStudent);
                     }
-                    catch { }
+                    catch {}
                 }
-            };
-            _heartbeatTimer.Start();
+            });
+            _heartbeatService.Start();
         }
 
         public async Task StopAsync()
-    {
-        _heartbeatTimer?.Stop();
-        if (_connection != null)
         {
-            await _connection.StopAsync();
+            _heartbeatService?.Stop(); 
+            if (_connection != null)
+            {
+                await _connection.StopAsync();
+            }
         }
     }
-}
-}
+}    
