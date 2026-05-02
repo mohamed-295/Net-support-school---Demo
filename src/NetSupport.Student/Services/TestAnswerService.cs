@@ -1,6 +1,7 @@
 using NetSupport.Shared.Models;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace NetSupport.Student.Services;
 

@@ -28,6 +28,7 @@ public sealed class TutorHub : Hub
         student.LastSeenUtc = DateTime.UtcNow;
 
         StudentConnections[student.StudentId] = Context.ConnectionId;
+        TutorServer.Instance.NotifyStudentRegistered(student);
 
         // Tell all Tutor clients that a new student registered.
         await Clients.Others.SendAsync("StudentRegistered", student);
