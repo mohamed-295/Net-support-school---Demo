@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NetSupport.Shared.Models;
+using System.Threading.Tasks;
+using System;
 
 namespace NetSupport.Tutor.Server;
 
@@ -16,6 +19,11 @@ public sealed class TutorServer : IAsyncDisposable
 {
     private WebApplication? _app;
 
+    public static TutorServer Instance { get; } = new TutorServer();
+
+    public event Action<StudentInfo> OnStudentRegistered;
+    public event Action<StudentInfo> OnHeartbeatReceived;
+
     // The URL the server listens on.
     // Default: http://0.0.0.0:5000 (accepts connections from any machine on the LAN).
     public string ListenUrl { get; set; } = "http://0.0.0.0:5000";
@@ -26,6 +34,18 @@ public sealed class TutorServer : IAsyncDisposable
     // Provides access to the SignalR hub context so forms and services
     // can send commands to connected students without going through a hub method.
     public IHubContext<TutorHub>? HubContext { get; private set; }
+
+    private TutorServer() { }
+    public void NotifyStudentRegistered(StudentInfo student)
+    {
+        OnStudentRegistered?.Invoke(student);
+    }
+
+    public void NotifyHeartbeatReceived(StudentInfo student)
+    {
+        OnHeartbeatReceived?.Invoke(student);
+    }
+
 
     // Builds the ASP.NET Core pipeline, registers SignalR, maps the hub,
     // and starts Kestrel.  Safe to call from the WinForms UI thread.
@@ -106,6 +126,8 @@ public sealed class TutorServer : IAsyncDisposable
             await HubContext.Clients.All.SendAsync("ReceiveCommand", command);
         }
     }
+
+
 
     public async ValueTask DisposeAsync()
     {

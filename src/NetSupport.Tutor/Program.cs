@@ -8,7 +8,7 @@ internal static class Program
     private static void Main()
     {
         ApplicationConfiguration.Initialize();
-        var tutorServer = new TutorServer();
+        var tutorServer = TutorServer.Instance;
 
         // Start server WITHOUT await
         tutorServer.StartAsync().GetAwaiter().GetResult();

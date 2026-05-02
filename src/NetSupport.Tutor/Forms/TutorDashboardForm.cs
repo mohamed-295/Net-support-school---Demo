@@ -26,7 +26,7 @@ public sealed class TutorDashboardForm : Form
         WindowState = FormWindowState.Maximized;
 
         _studentRegistry = new StudentRegistry();
-        _tutorServer = new TutorServer();
+        _tutorServer = TutorServer.Instance;
         _testSessionManager = new TestSessionManager();
 
         // ================= Layout =================
@@ -131,6 +131,37 @@ public sealed class TutorDashboardForm : Form
         _gridStudents.DataSource = _bindingList;
 
         AddSampleStudents();
+
+        // ================= Real-time Linking =================
+        _tutorServer.OnStudentRegistered += (student) =>
+        {
+            if (this.IsHandleCreated)
+            {
+                this.Invoke(new Action(() => 
+                {
+                
+                    var exists = _bindingList.Any(s => s.StudentId == student.StudentId);
+                    if (!exists)
+                    {
+                        _bindingList.Add(student);
+                        _studentRegistry.Upsert(student);
+                    }
+                }));
+            }
+        };
+
+        _tutorServer.OnHeartbeatReceived += (student) =>
+        {
+            if (this.IsHandleCreated)
+            {
+                this.Invoke(new Action(() => 
+                {
+                    _studentRegistry.Upsert(student);
+                    _gridStudents.Refresh(); 
+                }));
+            }
+        };
+
 
         // ================= Timer =================
         _refreshTimer = new System.Windows.Forms.Timer();
