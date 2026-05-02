@@ -1,16 +1,45 @@
 using NetSupport.Shared.Models;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace NetSupport.Student.Services;
 
-public sealed class TestAnswerService
+public static class TestAnswerService
 {
-    private readonly List<StudentAnswer> _answers = new();
-
-    public IReadOnlyList<StudentAnswer> Answers => _answers;
-
-    public void SaveAnswer(StudentAnswer answer)
+    public static async Task SendProgressAsync(string studentId, string sessionId, int answeredCount, int totalQuestions, string status = "Testing")
     {
-        _answers.RemoveAll(existing => existing.QuestionId == answer.QuestionId);
-        _answers.Add(answer);
+        if (StudentClient.Connection == null)
+        {
+            return;
+        }
+
+        var progress = new StudentProgress
+        {
+            StudentId = studentId,
+            SessionId = sessionId,
+            AnsweredCount = answeredCount,
+            TotalQuestions = totalQuestions,
+            RemainingSeconds = 0,
+            Status = status
+        };
+
+        await StudentClient.Connection.InvokeAsync("SendProgress", progress);
+    }
+
+    public static async Task SubmitAsync(string studentId, string sessionId, List<StudentAnswer> answers)
+    {
+        if (StudentClient.Connection == null)
+        {
+            return;
+        }
+
+        foreach (var answer in answers)
+        {
+            answer.StudentId = studentId;
+            answer.SessionId = sessionId;
+            answer.AnsweredAtUtc = DateTime.UtcNow;
+        }
+
+        await StudentClient.Connection.InvokeAsync("SubmitAnswers", studentId, answers);
     }
 }
