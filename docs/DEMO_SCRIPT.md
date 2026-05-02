@@ -48,7 +48,30 @@
 - Show student names, scores, answered questions, and total questions.
 - Show printable HTML/report view.
 
-## 4:40-5:00 - Arabic And Setup Zip
+## 4:40-4:50 - Arabic Support
 
-- Show Arabic labels or Arabic sample exam.
-- Show `output/setup` containing Tutor, Student, Designer, samples, and README.
+- Load the Arabic sample exam "اختبار تجريبي في الحاسب واللغة العربية" in Designer.
+- Show Arabic question text and Arabic choices displayed correctly (right-to-left).
+- Show Arabic labels on Tutor dashboard and Student forms if available.
+- Demonstrate that the UI supports RTL layout for Arabic text.
+
+## 4:50-5:00 - Setup And Future Features
+
+- Show `output/setup` folder containing Tutor, Student, and Designer executables.
+- Show sample exams in both English and Arabic.
+- Show README with build, run, and packaging instructions.
+- Mention future-year enhancements: Windows service installer, remote screen viewing, file distribution, chat, attendance analytics, browser lockdown, question bank import/export, role-based accounts, and cloud classroom features.
+
+---
+
+## Future-Year Feature Suggestions
+
+1. **Real Windows Service Installer** - Student app runs as a system service at startup instead of manual launch
+2. **Remote Screen Viewing** - Tutor can view student screen in real-time
+3. **File Distribution** - Tutor can distribute files to connected students
+4. **Tutor/Student Chat** - Real-time messaging between Tutor and Students
+5. **Attendance Analytics** - Track student login time, session duration, test completion rates
+6. **Browser Lockdown** - Restrict browser access during exams
+7. **Question Bank Import/Export** - Bulk import questions from CSV or XML, export to learning management systems
+8. **Role-Based Accounts** - Multiple tutors, assistant roles, admin dashboard
+9. **Cloud Classroom Mode** - Online exam delivery, student roster from cloud storage

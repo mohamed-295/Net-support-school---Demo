@@ -1,3 +1,5 @@
+using NetSupport.Shared.Localization;
+
 namespace NetSupport.Student.Forms;
 
 public sealed class LockScreenForm : Form
@@ -9,10 +11,12 @@ public sealed class LockScreenForm : Form
         FormBorderStyle = FormBorderStyle.None;
         TopMost = true;
         BackColor = Color.FromArgb(20, 20, 20);
+        RightToLeft = RightToLeft.Yes; // Support RTL for Arabic text
+        RightToLeftLayout = true;
 
         Controls.Add(new Label
         {
-            Text = "Computer locked by Tutor\nتم قفل الجهاز بواسطة المعلم",
+            Text = $"{LocalizationResources.GetString("Message.ComputerLocked", AppLanguage.English)}\n{LocalizationResources.GetString("Message.ComputerLocked", AppLanguage.Arabic)}",
             ForeColor = Color.White,
             Dock = DockStyle.Fill,
             TextAlign = ContentAlignment.MiddleCenter,
