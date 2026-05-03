@@ -322,8 +322,7 @@ public sealed class TutorDashboardForm : Form
         var exam = _sessionManager.ActiveSession?.Exam;
         if (exam is not null && exam.Questions.Count > 0)
         {
-            var correct = CountCorrectAnswers(exam, answers);
-            existing.Score = $"{correct}/{exam.Questions.Count}";
+            existing.Score = ReportService.CalculateScore(exam, answers);
         }
 
         _studentRegistry.Upsert(existing);
@@ -393,34 +392,6 @@ public sealed class TutorDashboardForm : Form
                 break;
             }
         }
-    }
-
-    private static int CountCorrectAnswers(Exam exam, List<StudentAnswer> answers)
-    {
-        var correctByQuestion = new Dictionary<string, string>();
-        foreach (var question in exam.Questions)
-        {
-            foreach (var choice in question.Choices)
-            {
-                if (choice.IsCorrect)
-                {
-                    correctByQuestion[question.Id] = choice.Id;
-                    break;
-                }
-            }
-        }
-
-        var correctCount = 0;
-        foreach (var answer in answers)
-        {
-            if (correctByQuestion.TryGetValue(answer.QuestionId, out var correctId)
-                && string.Equals(answer.ChoiceId, correctId, StringComparison.OrdinalIgnoreCase))
-            {
-                correctCount++;
-            }
-        }
-
-        return correctCount;
     }
 
     private void ShowDashboardValidation(string messageKey)
@@ -583,25 +554,22 @@ public sealed class TutorDashboardForm : Form
 
     private void OpenLiveTracking(object? sender, EventArgs e)
     {
-        if (!TryRequireStudentForPerStudentCommand(out _))
+        if (!_sessionManager.HasActiveSession)
         {
+            ShowDashboardValidation("Dashboard.MsgNoActiveTest");
             return;
         }
 
-        var form = new LiveTrackingForm();
+        var form = new LiveTrackingForm(_studentRegistry, _sessionManager);
         form.Show(this);
     }
 
     private void OpenReport(object? sender, EventArgs e)
     {
-        if (!TryRequireStudentForPerStudentCommand(out _))
-        {
-            return;
-        }
-
-        using var form = new ReportForm();
+        using var form = new ReportForm(_studentRegistry, _sessionManager);
         form.ShowDialog(this);
     }
+
 
     private async Task<bool> EnsureServerRunningAsync()
     {
