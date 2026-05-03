@@ -2,7 +2,7 @@
 
 ## Goal
 
-Build a **4-hour demo MVP** that satisfies the lab form and demonstrates the required features clearly. This is not a production clone of NetSupport School. To finish in 4 hours, the app will use demo-safe versions of hard system features:
+Build a **demo MVP** that satisfies the lab form and demonstrates the required features clearly. This is not a production clone of NetSupport School. To finish in 4 hours, the app will use demo-safe versions of hard system features:
 
 - "Starts as a service" means the Student app can be launched at startup or opened manually for the demo.
 - "Lock/unlock computers" means the Student app shows a full-screen topmost lock screen and removes it when Tutor unlocks.
