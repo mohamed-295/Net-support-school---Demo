@@ -29,6 +29,8 @@ docs/
   SUBMISSION_FORM_DATA.md
 samples/
   exams/
+INSTALL.txt             End-user install steps (included in submission zip; no build commands)
+Pack-SubmissionSetup.ps1  Developers: builds small framework-dependent setup + optional zip
 TEAM_PLAN.md            Full team plan and member tasks (root)
 ```
 
@@ -65,6 +67,14 @@ dotnet run --project src/NetSupport.Designer
 
 ## Publish (portable EXEs for demo / submission)
 
+**Small submission zip (~100 MB limit):** from repo root, with .NET 8 SDK:
+
+```powershell
+.\Pack-SubmissionSetup.ps1 -Zip
+```
+
+Creates `output\setup\` (Tutor, Student, Designer, `samples\exams`, `README.md`, **`INSTALL.txt`**) and `output\NetSupportSchool-Setup.zip`. **`INSTALL.txt` is only for people who receive the zip** (runtime + run order); it does not include build instructions.
+
 **Option A — smaller output (requires .NET 8 Desktop Runtime on each PC):**
 
 ```powershell
@@ -84,6 +94,8 @@ dotnet publish src/NetSupport.Designer/NetSupport.Designer.csproj -c Release -r 
 Zip each `publish\Tutor`, `publish\Student`, and `publish\Designer` folder (or a single zip that includes all three plus `samples\exams` and this README) for submission.
 
 ## Using the three EXE files
+
+If you received a **submission zip**, open **`INSTALL.txt`** first (Desktop Runtime and run order).
 
 You get one folder per app after publish (each contains `NetSupport.Tutor.exe`, `NetSupport.Student.exe`, or `NetSupport.Designer.exe`, plus any files the publish step placed next to them). **Keep each folder intact** when you copy or zip it; do not move only the `.exe` if other files are required.
 

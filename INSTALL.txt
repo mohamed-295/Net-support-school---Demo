@@ -1,0 +1,58 @@
+================================================================================
+  NetSupport School Demo — Installation (small setup / framework-dependent)
+================================================================================
+
+REQUIREMENTS
+------------
+  • Windows 64-bit (x64)
+  • .NET 8 Desktop Runtime (x64) — install once per PC if not already installed
+
+  Download:
+    https://dotnet.microsoft.com/download/dotnet/8.0
+
+  Choose: ".NET Desktop Runtime" → version 8.x → Windows x64 installer
+
+  If the apps fail to start with a message about missing runtime, install the
+  Desktop Runtime from the link above and try again.
+
+
+WHAT IS IN THIS PACKAGE
+-----------------------
+  Tutor\          Instructor app + embedded classroom server (run first)
+  Student\        Student app (connect after Tutor is running)
+  Designer\       Exam builder (optional; can run anytime)
+  samples\exams\  Sample exam JSON files
+  README.md       Full documentation
+  INSTALL.txt     This file
+
+
+QUICK START
+-----------
+  1) Install .NET 8 Desktop Runtime (x64) on each PC that will run these apps.
+
+  2) On the instructor PC:
+       • Open the Tutor folder and run NetSupport.Tutor.exe
+       • Use Settings to confirm listen URL and student hub URL (defaults work
+         for a single-PC demo with 127.0.0.1)
+       • Keep Tutor running while students connect
+
+  3) On each student PC:
+       • For the same PC as Tutor: run NetSupport.Student.exe after Tutor
+         has saved Settings once (so connection settings exist).
+       • For another PC on the network: copy connection-settings.json from the
+         tutor profile (see README.md) and allow the port through Windows
+         Firewall on the tutor machine.
+
+  4) Optional: run NetSupport.Designer.exe to create or edit exams; save JSON
+     files the Tutor can load in Test Setup.
+
+
+IMPORTANT
+---------
+  • Do not move only the .exe out of its folder — keep all files next to each
+    app’s executable.
+  • This package is the SMALL build: it needs the .NET Desktop Runtime.
+    (Self-contained builds are much larger and are not included here.)
+
+
+================================================================================

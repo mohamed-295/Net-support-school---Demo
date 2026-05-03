@@ -2,6 +2,7 @@
 bin/
 obj/
 output/setup/
+output/*.zip
 publish/
 
 # User/local files
