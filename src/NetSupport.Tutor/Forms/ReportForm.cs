@@ -96,8 +96,23 @@ public sealed class ReportForm : Form
             return;
         }
 
+        using var dialog = new SaveFileDialog
+        {
+            Title = "Save report",
+            Filter = "HTML Files (*.html)|*.html|All Files (*.*)|*.*",
+            FileName = $"Report_{DateTime.Now:yyyyMMdd_HHmmss}.html",
+            AddExtension = true,
+            DefaultExt = "html",
+            OverwritePrompt = true
+        };
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+        {
+            return;
+        }
+
         var html = ReportService.CreateHtmlReport(_bindingList);
-        var filePath = Path.Combine(Path.GetTempPath(), $"Report_{DateTime.Now:yyyyMMdd_HHmmss}.html");
+        var filePath = dialog.FileName;
         File.WriteAllText(filePath, html);
 
         MessageBox.Show($"Report exported to: {filePath}", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);

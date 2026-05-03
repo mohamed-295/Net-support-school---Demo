@@ -9,12 +9,12 @@ internal static class Program
     {
         ApplicationConfiguration.Initialize();
         var tutorServer = TutorServer.Instance;
-
-        // Start server WITHOUT await
-        tutorServer.StartAsync().GetAwaiter().GetResult();
         Application.Run(new TutorDashboardForm());
 
-        tutorServer.StopAsync().GetAwaiter().GetResult();
+        if (tutorServer.IsRunning)
+        {
+            tutorServer.StopAsync().GetAwaiter().GetResult();
+        }
         
     }
 }

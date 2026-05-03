@@ -295,7 +295,8 @@ public sealed class TestTakingForm : Form
             _answers.Count,
             _exam.Questions.Count,
             "Testing",
-            (int)remaining.TotalSeconds);
+            (int)remaining.TotalSeconds,
+            BuildCurrentAnswersSnapshot());
     }
 
     private void NavigateToQuestion(int index)
@@ -394,10 +395,23 @@ public sealed class TestTakingForm : Form
                     _answers.Count,
                     _exam.Questions.Count,
                     "Testing",
-                    GetRemainingSeconds());
+                    GetRemainingSeconds(),
+                    BuildCurrentAnswersSnapshot());
                 return;
             }
         }
+    }
+
+    private List<StudentAnswer> BuildCurrentAnswersSnapshot()
+    {
+        return _answers.Select(entry => new StudentAnswer
+        {
+            StudentId = _studentId,
+            SessionId = _sessionId,
+            QuestionId = _exam.Questions[entry.Key].Id,
+            ChoiceId = _exam.Questions[entry.Key].Choices[entry.Value].Id,
+            AnsweredAtUtc = DateTime.UtcNow
+        }).ToList();
     }
 
     private int GetRemainingSeconds()

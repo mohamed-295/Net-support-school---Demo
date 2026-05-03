@@ -133,7 +133,7 @@ flowchart LR
 
 ## Member Tasks And AI-Agent Prompts
 
-### Member 1 - Team Leader / Integration
+### Member 1 - Team Leader / Integration / QA
 
 Branch: `feature/member-01-setup-integration`
 
@@ -143,6 +143,7 @@ Deliverables:
 - Create `README.md`, `docs/TEAM_PLAN.md`, `docs/DEMO_SCRIPT.md`, and `docs/SUBMISSION_FORM_DATA.md`.
 - Add all projects to `NetSupportSchool.sln`.
 - Merge branches, resolve conflicts, publish apps, create setup zip.
+- **End-to-end verification (Member 1 owns the acceptance test):** run through the full demo path before submission — build/publish all three apps, Tutor first then Student, Designer exam JSON load/save, lock/unlock, test setup/start/stop, student timer and answers, live tracking (answered rows + correct/incorrect colors), report export to a chosen path, Arabic/RTL smoke test on main screens, and LAN settings (`connection-settings.json` / Tutor Settings) if multi-PC. Track issues, confirm fixes, and update `README.md` when behavior or packaging changes.
 
 AI-agent prompt:
 
@@ -188,7 +189,7 @@ Branch: `feature/member-04-student-registration`
 
 Deliverables:
 
-- `StudentLoginForm` for student name/id and tutor server URL.
+- `StudentLoginForm` for student name/id (hub URL is configured via Tutor **Settings** / shared `connection-settings.json`, not typed by the student).
 - `StudentClient` connects to Tutor hub.
 - Heartbeat every few seconds.
 - Reconnect message if disconnected.
@@ -196,7 +197,7 @@ Deliverables:
 AI-agent prompt:
 
 ```text
-Implement NetSupport.Student registration and heartbeat. Add StudentLoginForm to collect student full name, student id, and tutor server URL. After login, connect to SignalR TutorHub using StudentClient and send heartbeat every 5 seconds. Show connection status in StudentHomeForm.
+Implement NetSupport.Student registration and heartbeat. Add StudentLoginForm to collect student full name and student id. After login, connect to SignalR TutorHub using StudentClient (hub URL from shared settings) and send heartbeat every few seconds. Show connection status in StudentHomeForm.
 ```
 
 ### Member 5 - Student Lock And Unlock
@@ -254,14 +255,13 @@ Branch: `feature/member-08-student-test`
 Deliverables:
 
 - Student receives `StartTest`.
-- Student confirms login/name before starting.
-- `TestTakingForm` displays MCQ questions, next/previous navigation, answer selection, submit.
+- `TestTakingForm` displays MCQ questions, navigation (including clickable question list), timer, answer selection, progress to tutor, submit.
 - Auto-submit on `StopTest`.
 
 AI-agent prompt:
 
 ```text
-Implement Student test taking. When StartTest command arrives, show a test login/confirmation screen, then TestTakingForm. Display exam questions one by one with MCQ options, Next and Previous buttons, answered count, and Submit. Send progress and answers to Tutor. StopTest should submit current answers and close the test.
+Implement Student test taking. When StartTest command arrives, open TestTakingForm. Display exam questions with MCQ options, navigation, timer, answered count, and Submit. Send progress (including answer snapshots for live tracking) and final answers to Tutor. StopTest should submit current answers and close the test.
 ```
 
 ### Member 9 - Live Tracking And Reports
@@ -270,9 +270,9 @@ Branch: `feature/member-09-tracking-reports`
 
 Deliverables:
 
-- `LiveTrackingForm` shows student status, answered count, remaining time, submitted state.
-- `ReportService` calculates score.
-- `ReportForm` exports printable HTML report with student names, scores, answered count.
+- `LiveTrackingForm` shows student status, answered count, remaining time; detail grid lists **answered** questions with **Correct/Incorrect** (row colors).
+- `ReportService` calculates score as correct/total.
+- `ReportForm` exports printable HTML report (save path chosen by user) with student names, scores, answered count.
 
 AI-agent prompt:
 
@@ -322,7 +322,7 @@ public sealed class Exam
 
 ## Minimum Demo Acceptance Checklist
 
-- Tutor opens and starts the embedded server.
+- Tutor opens; embedded server starts when the dashboard loads (or verify Settings / port if changed).
 - Two Student app windows connect and appear in Tutor automatically.
 - Tutor can lock and unlock a Student window.
 - Designer creates or loads an MCQ exam.

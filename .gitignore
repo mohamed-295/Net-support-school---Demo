@@ -2,6 +2,7 @@
 bin/
 obj/
 output/setup/
+publish/
 
 # User/local files
 .vs/

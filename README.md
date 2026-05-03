@@ -1,41 +1,44 @@
 # NetSupport School Demo
 
-This repository contains a MVP demo for a classroom management system inspired by NetSupport School.
+This repository contains an MVP demo for a classroom management system inspired by NetSupport School.
 
 The demo is split into three Windows apps:
 
-- **Tutor**: detects connected students, sends lock/unlock commands, starts/stops tests, tracks progress, and prints reports.
-- **Student**: connects to the Tutor app, receives commands, opens tests, submits answers, and shows a demo lock screen.
-- **Designer**: creates MCQ exams and saves them as JSON files.
+- **Tutor**: embedded SignalR server, connected students grid, lock/unlock, test setup/start/stop, live tracking (per-question correctness), HTML reports (save location chosen by user), connection settings.
+- **Student**: registers with the tutor hub, receives commands, exam UI with timer and question navigation, submits answers and progress.
+- **Designer**: creates MCQ exams and saves them as JSON files (English/Arabic UI toggle).
 
 ## Tech Stack
 
 - C# / .NET 8
 - WinForms
-- SignalR planned for Tutor/Student live communication
-- JSON files for exams and reports
+- SignalR (Tutor hosts `TutorHub`; Student clients connect)
+- JSON files for exams; HTML export for reports
 
 ## Repository Structure
 
 ```text
 src/
-  NetSupport.Shared/    Shared models, contracts, JSON helpers
-  NetSupport.Tutor/     Tutor desktop app
+  NetSupport.Shared/    Shared models, contracts, localization, connection settings storage
+  NetSupport.Tutor/     Tutor desktop app + embedded Kestrel/SignalR server
   NetSupport.Student/   Student desktop app
   NetSupport.Designer/  MCQ exam designer app
 docs/
-  TEAM_PLAN.md
+  TEAM_PLAN.md          (stub linking to root TEAM_PLAN.md)
   DEMO_SCRIPT.md
   SUBMISSION_FORM_DATA.md
 samples/
   exams/
+TEAM_PLAN.md            Full team plan and member tasks (root)
 ```
 
 ## Requirements
 
-Install the .NET 8 SDK before building:
+Install the .NET 8 SDK before building from source:
 
 https://dotnet.microsoft.com/download/dotnet/8.0
+
+Published **self-contained** executables (see below) do not require a separate runtime install on the target PC.
 
 ## Build
 
@@ -44,7 +47,9 @@ dotnet restore
 dotnet build NetSupportSchool.sln
 ```
 
-## Run
+## Run (development)
+
+Start **Tutor** first so the hub is listening, then **Student** (and **Designer** anytime for exam authoring):
 
 ```powershell
 dotnet run --project src/NetSupport.Tutor
@@ -52,46 +57,85 @@ dotnet run --project src/NetSupport.Student
 dotnet run --project src/NetSupport.Designer
 ```
 
-## Publish For Submission
+## Connection settings (Tutor / Student)
+
+- The tutor configures **listen URL** and **student hub URL** in **Tutor → Settings** (saved under `%LocalAppData%\NetSupportSchool\connection-settings.json`).
+- The **Student** login form does not ask for a URL; it uses the same settings file. For a **second PC**, copy that file from the tutor machine or deploy matching `StudentHubUrl` (must reach the tutor host, e.g. `http://TUTOR_IP:5000/tutorHub`).
+- Ensure Windows Firewall allows inbound TCP on the chosen port on the tutor machine when students connect over the LAN.
+
+## Publish (portable EXEs for demo / submission)
+
+**Option A — smaller output (requires .NET 8 Desktop Runtime on each PC):**
 
 ```powershell
-dotnet publish src/NetSupport.Tutor -c Release -o output/setup/Tutor
-dotnet publish src/NetSupport.Student -c Release -o output/setup/Student
-dotnet publish src/NetSupport.Designer -c Release -o output/setup/Designer
+dotnet publish src/NetSupport.Tutor/NetSupport.Tutor.csproj -c Release -r win-x64 --self-contained false -o publish/Tutor
+dotnet publish src/NetSupport.Student/NetSupport.Student.csproj -c Release -r win-x64 --self-contained false -o publish/Student
+dotnet publish src/NetSupport.Designer/NetSupport.Designer.csproj -c Release -r win-x64 --self-contained false -o publish/Designer
 ```
 
-Then zip the `output/setup` folder with this README and `samples/exams`.
+**Option B — self-contained single-file (larger, no separate runtime; 64-bit Windows):**
 
-## Important Demo Notes
+```powershell
+dotnet publish src/NetSupport.Tutor/NetSupport.Tutor.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/Tutor
+dotnet publish src/NetSupport.Student/NetSupport.Student.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/Student
+dotnet publish src/NetSupport.Designer/NetSupport.Designer.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/Designer
+```
 
-- Student auto-detection is implemented by students registering with the Tutor server.
-- Lock/unlock is a safe demo simulation using a full-screen Student form.
-- The Student app can be manually opened for the demo; real Windows service installation is listed as a future improvement.
-- Arabic support is implemented with RTL layout and Arabic labels throughout the UI.
+Zip each `publish\Tutor`, `publish\Student`, and `publish\Designer` folder (or a single zip that includes all three plus `samples\exams` and this README) for submission.
 
-## Arabic Support
+## Using the three EXE files
 
-This demo includes full Arabic language support:
+You get one folder per app after publish (each contains `NetSupport.Tutor.exe`, `NetSupport.Student.exe`, or `NetSupport.Designer.exe`, plus any files the publish step placed next to them). **Keep each folder intact** when you copy or zip it; do not move only the `.exe` if other files are required.
 
-- **Language Toggle**: Each main form (Tutor Dashboard, Student Home) has an "العربية" (Arabic) button to switch between English and Arabic.
-- **RTL Layout**: When Arabic is selected, the UI automatically switches to right-to-left layout (RightToLeft and RightToLeftLayout enabled).
-- **Localized Labels**: All UI labels, buttons, and messages are translated to Arabic using the `LocalizationResources` class in `NetSupport.Shared.Localization`.
-- **Arabic Sample Exam**: The Designer app can load the sample exam `اختبار_تجريبي_في_الحاسب_واللغة_العربية.json` which contains Arabic questions and choices.
-- **Lock Screen Bilingual**: The lock screen displays both English and Arabic messages.
+### 1. NetSupport.Designer.exe (any time)
 
-### How to Use Arabic
+- Run this on a PC where you want to **create or edit** exam JSON files.
+- It does **not** need the Tutor or Student apps running.
+- Save exams where the Tutor can open them (for example copy the JSON into `samples\exams` or pick the file from **Test Setup** on the Tutor machine).
 
-1. Open any main app (Tutor, Student, or Designer).
-2. Click the "العربية" button in the header to switch to Arabic mode.
-3. The entire UI will switch to Arabic with RTL layout.
-4. Click again to return to English.
+### 2. NetSupport.Tutor.exe (instructor — start first)
 
-### Arabic Sample Exams
+1. Run **`NetSupport.Tutor.exe`** on the computer that will host the session.
+2. Open **Settings** and confirm **Tutor listen URL** (default is often `http://0.0.0.0:5000`) and **Student hub URL** (on the same PC this is often `http://127.0.0.1:5000/tutorHub`). Save if you change them.
+3. The dashboard loads and the embedded server should start listening so students can connect.
+4. Use **Setup Test** / **Start Test** / **Stop Test**, **Live Tracking**, **Report**, and **Lock** / **Unlock** as needed.
 
-Located in `samples/exams/`:
+### 3. NetSupport.Student.exe (each student machine)
 
-- `اختبار_تجريبي_في_الحاسب_واللغة_العربية.json` - Arabic Computer and Language exam with 3+ questions in Arabic
+1. Run **`NetSupport.Student.exe`** after the Tutor is up (or at least before clicking **Connect & Login**).
+2. Enter **Full Name** and **Student ID**, then connect. The app reads the hub address from `%LocalAppData%\NetSupportSchool\connection-settings.json` (same keys the Tutor saves from **Settings**).
 
-## Team Plan
+**Same PC as Tutor (simplest demo):** run Tutor once and save **Settings** so the JSON exists; then run Student on that PC — no extra copy step.
 
-See `TEAM_PLAN.md` for the 10-member task split, branch names, AI-agent prompts, and 4-hour schedule.
+**Another PC on the network:** on the Tutor machine, set **Student hub URL** to something students can reach (for example `http://TUTOR_COMPUTER_IP:5000/tutorHub`). Copy `connection-settings.json` from the Tutor profile’s `NetSupportSchool` folder to the **same path** on each student PC (or edit the file there so `StudentHubUrl` matches). Allow the port through **Windows Firewall** on the Tutor PC.
+
+### Quick classroom flow
+
+1. Instructor: **Tutor** → check **Settings** → students connect with **Student**.
+2. Optional: build or load an exam with **Designer**; on **Tutor**, **Setup Test** → choose that exam and students → **Start Test**.
+3. Students complete the test; instructor uses **Live Tracking** and **Report** as needed.
+
+Self-contained builds target **64-bit Windows** (`win-x64`). Framework-dependent builds need the [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) installed on each machine.
+
+## Important demo notes
+
+- **Student auto-detection**: students appear when they connect and register with the tutor hub.
+- **Lock/unlock**: demo simulation via a full-screen topmost form on the Student app (not OS-level locking).
+- **Tests**: tutor starts the test; students receive `StartTest` and open the exam UI; scores in reports use **correct/total** (e.g. `7/10`).
+- **Live tracking**: per-student overview plus a detail list of **answered** questions with **Correct / Incorrect** row coloring (uses `Choice.IsCorrect` in exam JSON).
+- **Reports**: HTML export via **Save As** (path chosen by the user, not a fixed temp folder).
+- **Student as a service**: optional manual launch or startup shortcut; a real Windows service is a documented future improvement.
+
+## Arabic support
+
+- **Tutor** dashboard, test setup, and related messages; **Designer** and question editor; sample exams can be fully Arabic.
+- **Language toggle** and **RTL** where implemented (`LocalizationResources` in `NetSupport.Shared.Localization`).
+- **Lock screen** shows bilingual messaging.
+
+### Arabic sample exams
+
+Under `samples/exams/`, including files such as `اختبار_تجريبي_في_الحاسب_واللغة_العربية.json`.
+
+## Team plan
+
+See root [`TEAM_PLAN.md`](TEAM_PLAN.md) for the 10-member task split, branches, AI prompts, and demo checklist.

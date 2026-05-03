@@ -13,7 +13,8 @@ public static class TestAnswerService
         int answeredCount,
         int totalQuestions,
         string status = "Testing",
-        int remainingSeconds = 0)
+        int remainingSeconds = 0,
+        IEnumerable<StudentAnswer>? answers = null)
     {
         if (StudentClient.Connection == null)
         {
@@ -27,7 +28,8 @@ public static class TestAnswerService
             AnsweredCount = answeredCount,
             TotalQuestions = totalQuestions,
             RemainingSeconds = remainingSeconds,
-            Status = status
+            Status = status,
+            Answers = answers?.ToList() ?? new List<StudentAnswer>()
         };
 
         await StudentClient.Connection.InvokeAsync("SendProgress", progress);

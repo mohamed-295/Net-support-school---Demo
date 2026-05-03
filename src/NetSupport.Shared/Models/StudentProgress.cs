@@ -8,4 +8,5 @@ public sealed class StudentProgress
     public int TotalQuestions { get; set; }
     public int RemainingSeconds { get; set; }
     public string Status { get; set; } = "Waiting";
+    public List<StudentAnswer> Answers { get; set; } = new();
 }

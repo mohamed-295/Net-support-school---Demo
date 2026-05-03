@@ -24,6 +24,7 @@ public sealed class TutorDashboardForm : Form
     private StudentInfo? _selectedStudent;
     private bool _isRefreshing = false;
     private string? _lastExamPath;
+    private TutorConnectionSettings _connectionSettings;
 
     public TutorDashboardForm()
     {
@@ -36,6 +37,8 @@ public sealed class TutorDashboardForm : Form
         _studentRegistry = new StudentRegistry();
         _tutorServer = TutorServer.Instance;
         _sessionManager = new TestSessionManager();
+        _connectionSettings = TutorConnectionSettings.Load();
+        _tutorServer.ListenUrl = _connectionSettings.TutorListenUrl;
 
         // ================= Layout =================
         var mainPanel = new TableLayoutPanel
@@ -77,6 +80,15 @@ public sealed class TutorDashboardForm : Form
         };
         langToggleBtn.Click += (s, e) => ToggleLanguage();
         headerLayout.Controls.Add(langToggleBtn);
+
+        var settingsBtn = new Button
+        {
+            Text = "Settings",
+            Width = 90,
+            Height = 30
+        };
+        settingsBtn.Click += OpenSettings;
+        headerLayout.Controls.Add(settingsBtn);
 
         headerPanel.Controls.Add(headerLayout);
         mainPanel.Controls.Add(headerPanel, 0, 0);
@@ -171,6 +183,14 @@ public sealed class TutorDashboardForm : Form
         _refreshTimer.Interval = 1000;
         _refreshTimer.Tick += (s, e) => RefreshLastSeenColumn();
         _refreshTimer.Start();
+
+        // Students connect to the hub as soon as the Tutor app is open; start listening when the dashboard loads.
+        Load += (_, _) => _ = StartTutorServerWhenDashboardOpensAsync();
+    }
+
+    private async Task StartTutorServerWhenDashboardOpensAsync()
+    {
+        await EnsureServerRunningAsync();
     }
 
     // ================= Language Toggle =================
@@ -550,6 +570,38 @@ public sealed class TutorDashboardForm : Form
 
         await _tutorServer.SendCommandToStudentAsync(student.StudentId, command);
         _sessionManager.StopSession();
+    }
+
+    private async void OpenSettings(object? sender, EventArgs e)
+    {
+        using var form = new TutorSettingsForm(_connectionSettings);
+        if (form.ShowDialog(this) != DialogResult.OK || form.Result is null)
+        {
+            return;
+        }
+
+        var oldListenUrl = _connectionSettings.TutorListenUrl;
+        _connectionSettings = form.Result;
+        _connectionSettings.Save();
+        _tutorServer.ListenUrl = _connectionSettings.TutorListenUrl;
+
+        if (_tutorServer.IsRunning && !string.Equals(oldListenUrl, _connectionSettings.TutorListenUrl, StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                await _tutorServer.StopAsync();
+                await _tutorServer.StartAsync();
+                MessageBox.Show(this, "Tutor server settings saved and server restarted.", "Settings", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"Saved settings, but server restart failed: {ex.Message}", "Settings", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+        else
+        {
+            MessageBox.Show(this, "Tutor settings saved.", "Settings", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
     }
 
     private void OpenLiveTracking(object? sender, EventArgs e)
