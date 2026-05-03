@@ -1,6 +1,6 @@
 # NetSupport School Demo
 
-This repository contains a 4-hour MVP demo for a classroom management system inspired by NetSupport School.
+This repository contains a MVP demo for a classroom management system inspired by NetSupport School.
 
 The demo is split into three Windows apps:
 
