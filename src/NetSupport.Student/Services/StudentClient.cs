@@ -105,11 +105,15 @@ namespace NetSupport.Student.Services
     {
         if (_lockScreenForm != null && !_lockScreenForm.IsDisposed)
         {
+            _lockScreenForm.BringToFront();
+            _lockScreenForm.Activate();
             return;
         }
 
         _lockScreenForm = new LockScreenForm();
         _lockScreenForm.Show();
+        _lockScreenForm.BringToFront();
+        _lockScreenForm.Activate();
     }
 
     private void HideLockScreen()
@@ -119,7 +123,10 @@ namespace NetSupport.Student.Services
             return;
         }
 
-        _lockScreenForm.Close();
+        if (!_lockScreenForm.IsDisposed)
+        {
+            _lockScreenForm.Unlock();
+        }
         _lockScreenForm = null;
     }
 

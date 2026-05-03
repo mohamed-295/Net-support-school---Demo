@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 using NetSupport.Shared.Contracts;
+using NetSupport.Shared.Localization;
 using NetSupport.Shared.Models;
 using NetSupport.Shared.Storage;
 using NetSupport.Tutor.Server;
@@ -15,6 +16,8 @@ public sealed class TutorDashboardForm : Form
     private readonly TestSessionManager _sessionManager;
     private readonly DataGridView _gridStudents;
     private readonly System.Windows.Forms.Timer _refreshTimer;
+    private Label _titleLabel;
+    private AppLanguage _currentLanguage = AppLanguage.English;
 
     private BindingList<StudentInfo> _bindingList = new();
     private StudentInfo? _selectedStudent;
@@ -41,21 +44,41 @@ public sealed class TutorDashboardForm : Form
             ColumnCount = 1,
             RowStyles =
             {
-                new RowStyle(SizeType.Absolute, 40),
+                new RowStyle(SizeType.Absolute, 50),
                 new RowStyle(SizeType.Percent, 100),
                 new RowStyle(SizeType.Absolute, 70)
             }
         };
 
-        var title = new Label
+        // ================= Header with Language Toggle =================
+        var headerPanel = new Panel { Dock = DockStyle.Fill };
+        var headerLayout = new FlowLayoutPanel
         {
-            Text = "Connected Students",
             Dock = DockStyle.Fill,
-            TextAlign = ContentAlignment.MiddleLeft,
-            Font = new Font("Segoe UI", 14, FontStyle.Bold),
-            Margin = new Padding(10, 0, 0, 0)
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            Padding = new Padding(10)
         };
-        mainPanel.Controls.Add(title, 0, 0);
+
+        _titleLabel = new Label
+        {
+            Text = LocalizationResources.GetString("Dashboard.ConnectedStudents", _currentLanguage),
+            AutoSize = true,
+            Font = new Font("Segoe UI", 14, FontStyle.Bold)
+        };
+        headerLayout.Controls.Add(_titleLabel);
+
+        var langToggleBtn = new Button
+        {
+            Text = "العربية",
+            Width = 80,
+            Height = 30
+        };
+        langToggleBtn.Click += (s, e) => ToggleLanguage();
+        headerLayout.Controls.Add(langToggleBtn);
+
+        headerPanel.Controls.Add(headerLayout);
+        mainPanel.Controls.Add(headerPanel, 0, 0);
 
         // ================= Grid =================
         _gridStudents = new DataGridView
@@ -72,12 +95,12 @@ public sealed class TutorDashboardForm : Form
         _gridStudents.Columns.AddRange(
             new DataGridViewColumn[]
             {
-                new DataGridViewTextBoxColumn { HeaderText="Name", DataPropertyName="FullName" },
-                new DataGridViewTextBoxColumn { HeaderText="Machine", DataPropertyName="MachineName" },
-                new DataGridViewTextBoxColumn { HeaderText="Status", DataPropertyName="Status" },
-                new DataGridViewTextBoxColumn { HeaderText="Answered", DataPropertyName="AnsweredCount" },
-                new DataGridViewTextBoxColumn { HeaderText="Score", DataPropertyName="Score" },
-                new DataGridViewTextBoxColumn { Name="LastSeenUtc", HeaderText="Last Seen", DataPropertyName="LastSeenUtc" }
+                new DataGridViewTextBoxColumn { HeaderText=LocalizationResources.GetString("Dashboard.Name", _currentLanguage), DataPropertyName="FullName" },
+                new DataGridViewTextBoxColumn { HeaderText=LocalizationResources.GetString("Dashboard.Machine", _currentLanguage), DataPropertyName="MachineName" },
+                new DataGridViewTextBoxColumn { HeaderText=LocalizationResources.GetString("Dashboard.Status", _currentLanguage), DataPropertyName="Status" },
+                new DataGridViewTextBoxColumn { HeaderText=LocalizationResources.GetString("Dashboard.Answered", _currentLanguage), DataPropertyName="AnsweredCount" },
+                new DataGridViewTextBoxColumn { HeaderText=LocalizationResources.GetString("Dashboard.Score", _currentLanguage), DataPropertyName="Score" },
+                new DataGridViewTextBoxColumn { Name="LastSeenUtc", HeaderText=LocalizationResources.GetString("Dashboard.LastSeen", _currentLanguage), DataPropertyName="LastSeenUtc" }
             }
         );
 
@@ -101,27 +124,30 @@ public sealed class TutorDashboardForm : Form
         var buttonPanel = new Panel { Dock = DockStyle.Fill };
         var flowLayout = new FlowLayoutPanel { Dock = DockStyle.Fill };
 
-        var buttons = new (string Text, EventHandler? Click)[]
+        var buttons = new (string Key, EventHandler? Click)[]
         {
-            ("Lock", LockStudent),
-            ("Unlock", UnlockStudent),
-            ("Setup Test", SetupTest),
-            ("Start Test", StartTest),
-            ("Stop Test", StopTest),
-            ("Live Tracking", OpenLiveTracking),
-            ("Report", OpenReport)
+            ("Button.Lock", LockStudent),
+            ("Button.Unlock", UnlockStudent),
+            ("Button.SetupTest", SetupTest),
+            ("Button.StartTest", StartTest),
+            ("Button.StopTest", StopTest),
+            ("Button.LiveTracking", OpenLiveTracking),
+            ("Button.Report", OpenReport)
         };
 
-        foreach (var (text, click) in buttons)
+        var buttonList = new List<Button>();
+        foreach (var (key, click) in buttons)
         {
             var btn = new Button
             {
-                Text = text,
+                Text = LocalizationResources.GetString(key, _currentLanguage),
                 Width = 110,
                 Height = 35,
-                Enabled = false
+                Enabled = false,
+                Tag = key // Store key for retranslation
             };
             btn.Click += click;
+            buttonList.Add(btn);
             flowLayout.Controls.Add(btn);
         }
 
@@ -145,6 +171,37 @@ public sealed class TutorDashboardForm : Form
         _refreshTimer.Interval = 1000;
         _refreshTimer.Tick += (s, e) => RefreshLastSeenColumn();
         _refreshTimer.Start();
+    }
+
+    // ================= Language Toggle =================
+    private void ToggleLanguage()
+    {
+        _currentLanguage = _currentLanguage == AppLanguage.English ? AppLanguage.Arabic : AppLanguage.English;
+
+        // Update UI labels
+        Text = LocalizationResources.GetString("Dashboard.Title", _currentLanguage);
+        _titleLabel.Text = LocalizationResources.GetString("Dashboard.ConnectedStudents", _currentLanguage);
+
+        // Update grid column headers
+        _gridStudents.Columns[0].HeaderText = LocalizationResources.GetString("Dashboard.Name", _currentLanguage);
+        _gridStudents.Columns[1].HeaderText = LocalizationResources.GetString("Dashboard.Machine", _currentLanguage);
+        _gridStudents.Columns[2].HeaderText = LocalizationResources.GetString("Dashboard.Status", _currentLanguage);
+        _gridStudents.Columns[3].HeaderText = LocalizationResources.GetString("Dashboard.Answered", _currentLanguage);
+        _gridStudents.Columns[4].HeaderText = LocalizationResources.GetString("Dashboard.Score", _currentLanguage);
+        _gridStudents.Columns[5].HeaderText = LocalizationResources.GetString("Dashboard.LastSeen", _currentLanguage);
+
+        // Update button texts
+        foreach (Control control in GetAllControls(this))
+        {
+            if (control is Button btn && btn.Tag is string key && key.StartsWith("Button."))
+            {
+                btn.Text = LocalizationResources.GetString(key, _currentLanguage);
+            }
+        }
+
+        // Set RTL if Arabic
+        this.RightToLeft = _currentLanguage == AppLanguage.Arabic ? RightToLeft.Yes : RightToLeft.No;
+        this.RightToLeftLayout = _currentLanguage == AppLanguage.Arabic;
     }
 
     // 🔁 Smooth refresh (no rebinding)

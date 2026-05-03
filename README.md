@@ -1,6 +1,6 @@
 # NetSupport School Demo
 
-This repository contains a 4-hour MVP demo for a classroom management system inspired by NetSupport School.
+This repository contains a MVP demo for a classroom management system inspired by NetSupport School.
 
 The demo is split into three Windows apps:
 
@@ -67,7 +67,30 @@ Then zip the `output/setup` folder with this README and `samples/exams`.
 - Student auto-detection is implemented by students registering with the Tutor server.
 - Lock/unlock is a safe demo simulation using a full-screen Student form.
 - The Student app can be manually opened for the demo; real Windows service installation is listed as a future improvement.
-- Arabic support should include RTL layout and Arabic labels/sample exam.
+- Arabic support is implemented with RTL layout and Arabic labels throughout the UI.
+
+## Arabic Support
+
+This demo includes full Arabic language support:
+
+- **Language Toggle**: Each main form (Tutor Dashboard, Student Home) has an "العربية" (Arabic) button to switch between English and Arabic.
+- **RTL Layout**: When Arabic is selected, the UI automatically switches to right-to-left layout (RightToLeft and RightToLeftLayout enabled).
+- **Localized Labels**: All UI labels, buttons, and messages are translated to Arabic using the `LocalizationResources` class in `NetSupport.Shared.Localization`.
+- **Arabic Sample Exam**: The Designer app can load the sample exam `اختبار_تجريبي_في_الحاسب_واللغة_العربية.json` which contains Arabic questions and choices.
+- **Lock Screen Bilingual**: The lock screen displays both English and Arabic messages.
+
+### How to Use Arabic
+
+1. Open any main app (Tutor, Student, or Designer).
+2. Click the "العربية" button in the header to switch to Arabic mode.
+3. The entire UI will switch to Arabic with RTL layout.
+4. Click again to return to English.
+
+### Arabic Sample Exams
+
+Located in `samples/exams/`:
+
+- `اختبار_تجريبي_في_الحاسب_واللغة_العربية.json` - Arabic Computer and Language exam with 3+ questions in Arabic
 
 ## Team Plan
 
