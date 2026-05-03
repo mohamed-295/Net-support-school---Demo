@@ -91,6 +91,41 @@ public static class LocalizationResources
         { "Dashboard.MsgNoStudentsConnected", new() { { AppLanguage.English, "No students are connected yet. Open a student app and sign in, then try again." }, { AppLanguage.Arabic, "لا يوجد طلاب متصلون بعد. افتح تطبيق الطالب وسجّل الدخول ثم أعد المحاولة." } } },
         { "Dashboard.MsgSelectStudentFirst", new() { { AppLanguage.English, "Select a student in the list first." }, { AppLanguage.Arabic, "اختر طالباً من القائمة أولاً." } } },
         { "Dashboard.MsgNoActiveTest", new() { { AppLanguage.English, "There is no active test session to stop." }, { AppLanguage.Arabic, "لا توجد جلسة امتحان نشطة لإيقافها." } } },
+
+        // Designer
+        { "Designer.Title", new() { { AppLanguage.English, "Exam Designer" }, { AppLanguage.Arabic, "مصمم الامتحانات" } } },
+        { "Designer.GroupExam", new() { { AppLanguage.English, "Exam Details" }, { AppLanguage.Arabic, "تفاصيل الامتحان" } } },
+        { "Designer.GroupQuestion", new() { { AppLanguage.English, "Question Builder" }, { AppLanguage.Arabic, "إعداد السؤال" } } },
+        { "Designer.GroupList", new() { { AppLanguage.English, "Questions" }, { AppLanguage.Arabic, "الأسئلة" } } },
+        { "Designer.LabelTitle", new() { { AppLanguage.English, "Title" }, { AppLanguage.Arabic, "العنوان" } } },
+        { "Designer.LabelDuration", new() { { AppLanguage.English, "Duration (minutes)" }, { AppLanguage.Arabic, "المدة (بالدقائق)" } } },
+        { "Designer.LabelQuestion", new() { { AppLanguage.English, "Question" }, { AppLanguage.Arabic, "السؤال" } } },
+        { "Designer.LabelCorrect", new() { { AppLanguage.English, "Correct Choice" }, { AppLanguage.Arabic, "الخيار الصحيح" } } },
+        { "Designer.PlaceholderTitle", new() { { AppLanguage.English, "Exam Title" }, { AppLanguage.Arabic, "عنوان الامتحان" } } },
+        { "Designer.PlaceholderQuestion", new() { { AppLanguage.English, "Question text" }, { AppLanguage.Arabic, "نص السؤال" } } },
+        { "Designer.PlaceholderChoice", new() { { AppLanguage.English, "Choice {0}" }, { AppLanguage.Arabic, "الخيار {0}" } } },
+        { "Designer.ColumnQuestion", new() { { AppLanguage.English, "Question" }, { AppLanguage.Arabic, "السؤال" } } },
+        { "Designer.ButtonAddQuestion", new() { { AppLanguage.English, "Add Question" }, { AppLanguage.Arabic, "إضافة سؤال" } } },
+        { "Designer.ButtonSaveExam", new() { { AppLanguage.English, "Save Exam" }, { AppLanguage.Arabic, "حفظ الامتحان" } } },
+        { "Designer.ButtonLoadExam", new() { { AppLanguage.English, "Load Exam" }, { AppLanguage.Arabic, "تحميل امتحان" } } },
+        { "Designer.ButtonEditQuestion", new() { { AppLanguage.English, "Edit" }, { AppLanguage.Arabic, "تعديل" } } },
+        { "Designer.ButtonDeleteQuestion", new() { { AppLanguage.English, "Delete" }, { AppLanguage.Arabic, "حذف" } } },
+        { "Designer.MsgQuestionRequired", new() { { AppLanguage.English, "Enter question text." }, { AppLanguage.Arabic, "أدخل نص السؤال." } } },
+        { "Designer.MsgCorrectRequired", new() { { AppLanguage.English, "Select the correct choice." }, { AppLanguage.Arabic, "اختر الخيار الصحيح." } } },
+        { "Designer.MsgChoiceEmpty", new() { { AppLanguage.English, "Choice {0} is empty." }, { AppLanguage.Arabic, "الخيار {0} فارغ." } } },
+        { "Designer.MsgTitleOrQuestions", new() { { AppLanguage.English, "Enter exam title and add at least one question." }, { AppLanguage.Arabic, "أدخل عنوان الامتحان وأضف سؤالاً واحداً على الأقل." } } },
+        { "Designer.MsgSaved", new() { { AppLanguage.English, "Exam saved successfully." }, { AppLanguage.Arabic, "تم حفظ الامتحان بنجاح." } } },
+        { "Designer.MsgLoadFailed", new() { { AppLanguage.English, "Failed to load exam file." }, { AppLanguage.Arabic, "فشل تحميل ملف الامتحان." } } },
+        { "Designer.MsgDeleteConfirm", new() { { AppLanguage.English, "Delete this question?" }, { AppLanguage.Arabic, "هل تريد حذف هذا السؤال؟" } } },
+        { "Designer.MsgSelectQuestionEdit", new() { { AppLanguage.English, "Select a question to edit." }, { AppLanguage.Arabic, "اختر سؤالاً للتعديل." } } },
+        { "Designer.MsgSelectQuestionDelete", new() { { AppLanguage.English, "Select a question to delete." }, { AppLanguage.Arabic, "اختر سؤالاً للحذف." } } },
+        { "Designer.Caption", new() { { AppLanguage.English, "Designer" }, { AppLanguage.Arabic, "المصمم" } } },
+        { "Designer.FilterJson", new() { { AppLanguage.English, "JSON Files (*.json)|*.json" }, { AppLanguage.Arabic, "ملفات JSON (*.json)|*.json" } } },
+
+        // Question editor
+        { "QuestionEditor.Title", new() { { AppLanguage.English, "Question Editor" }, { AppLanguage.Arabic, "محرر السؤال" } } },
+        { "QuestionEditor.ButtonSave", new() { { AppLanguage.English, "Save" }, { AppLanguage.Arabic, "حفظ" } } },
+        { "QuestionEditor.ButtonCancel", new() { { AppLanguage.English, "Cancel" }, { AppLanguage.Arabic, "إلغاء" } } },
     };
 
     public static string GetString(string key, AppLanguage language)

@@ -1,214 +1,361 @@
-using NetSupport.Shared.Models;
-using NetSupport.Shared.Localization;
 using NetSupport.Designer.Services;
-using System.Text.Json;
+using NetSupport.Shared.Localization;
+using NetSupport.Shared.Models;
 
 namespace NetSupport.Designer.Forms;
 
 public sealed class ExamDesignerForm : Form
 {
-    private TextBox txtTitle = null!;
-    private NumericUpDown numDuration = null!;
-    private TextBox txtQuestion = null!;
-    private TextBox[] txtChoices = null!;
-    private ComboBox cmbCorrect = null!;
-    private ListView lstQuestions = null!;
-
-    private List<Question> questions = new();
     private readonly ExamDesignerService _service = new();
+    private readonly List<Question> _questions = new();
+
+    private AppLanguage _currentLanguage = AppLanguage.English;
 
     private const string ExamsFolder = "samples/exams";
-    
+
+    private Label _titleLabel = null!;
+    private Label _durationLabel = null!;
+    private Label _questionLabel = null!;
+    private Label _correctLabel = null!;
+    private GroupBox _examGroup = null!;
+    private GroupBox _questionGroup = null!;
+    private GroupBox _listGroup = null!;
+    private Button _langToggleBtn = null!;
+
+    private TextBox _txtTitle = null!;
+    private NumericUpDown _numDuration = null!;
+    private TextBox _txtQuestion = null!;
+    private TextBox[] _txtChoices = null!;
+    private ComboBox _cmbCorrect = null!;
+
+    private ListView _lstQuestions = null!;
+    private Button _btnAddQuestion = null!;
+    private Button _btnSaveExam = null!;
+    private Button _btnLoadExam = null!;
+    private Button _btnEditQuestion = null!;
+    private Button _btnDeleteQuestion = null!;
 
     public ExamDesignerForm()
     {
-        Text = "Exam Designer";
-        Width = 900;
-        Height = 600;
+        Text = Local("Designer.Title");
+        Width = 1100;
+        Height = 740;
         StartPosition = FormStartPosition.CenterScreen;
+        MinimumSize = new Size(900, 620);
 
-        InitializeUI();
+        BuildUi();
+        ApplyLocalization();
     }
 
-    private void InitializeUI()
+    private string Local(string key) => LocalizationResources.GetString(key, _currentLanguage);
+
+    private void BuildUi()
     {
-        var main = new TableLayoutPanel
+        var root = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
+            ColumnCount = 1,
             RowCount = 2,
-            ColumnCount = 1
+            Padding = new Padding(12)
         };
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
+        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
-        // ===== Top Panel =====
-        var topPanel = new FlowLayoutPanel
+        var header = new FlowLayoutPanel
         {
             Dock = DockStyle.Fill,
-            AutoScroll = true,
-            FlowDirection = FlowDirection.TopDown,
+            FlowDirection = FlowDirection.RightToLeft,
             WrapContents = false,
-            Height = 300
+            Padding = new Padding(0, 8, 0, 0)
+        };
+        _langToggleBtn = new Button { Width = 90, Height = 30, Margin = new Padding(0) };
+        _langToggleBtn.Click += (_, _) => ToggleLanguage();
+        header.Controls.Add(_langToggleBtn);
+
+        var body = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 1
+        };
+        body.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 52));
+        body.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 48));
+
+        var left = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2,
+            Padding = new Padding(0, 0, 8, 0)
+        };
+        left.RowStyles.Add(new RowStyle(SizeType.Absolute, 170));
+        left.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
+        _examGroup = new GroupBox { Dock = DockStyle.Fill };
+        _questionGroup = new GroupBox { Dock = DockStyle.Fill };
+        _listGroup = new GroupBox { Dock = DockStyle.Fill, Padding = new Padding(10) };
+
+        left.Controls.Add(_examGroup, 0, 0);
+        left.Controls.Add(_questionGroup, 0, 1);
+
+        body.Controls.Add(left, 0, 0);
+        body.Controls.Add(_listGroup, 1, 0);
+
+        BuildExamDetailsUi();
+        BuildQuestionBuilderUi();
+        BuildQuestionListUi();
+
+        root.Controls.Add(header, 0, 0);
+        root.Controls.Add(body, 0, 1);
+        Controls.Add(root);
+    }
+
+    private void BuildExamDetailsUi()
+    {
+        var grid = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 2,
+            Padding = new Padding(8)
+        };
+        grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 160));
+        grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        grid.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
+        grid.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
+
+        _titleLabel = new Label { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft };
+        _durationLabel = new Label { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft };
+
+        _txtTitle = new TextBox { Dock = DockStyle.Fill };
+        _numDuration = new NumericUpDown
+        {
+            Dock = DockStyle.Left,
+            Width = 120,
+            Minimum = 1,
+            Maximum = 180,
+            Value = 10
         };
 
-        txtTitle = new TextBox { Width = 300, PlaceholderText = "Exam Title" };
-        numDuration = new NumericUpDown { Width = 100, Minimum = 1, Maximum = 180, Value = 10 };
+        grid.Controls.Add(_titleLabel, 0, 0);
+        grid.Controls.Add(_txtTitle, 1, 0);
+        grid.Controls.Add(_durationLabel, 0, 1);
+        grid.Controls.Add(_numDuration, 1, 1);
+        _examGroup.Controls.Add(grid);
+    }
 
-        txtQuestion = new TextBox { Width = 400, PlaceholderText = "Question" };
-
-        txtChoices = new TextBox[4];
-        for (int i = 0; i < 4; i++)
+    private void BuildQuestionBuilderUi()
+    {
+        var builder = new TableLayoutPanel
         {
-            txtChoices[i] = new TextBox
-            {
-                Width = 300,
-                PlaceholderText = $"Choice {i + 1}"
-            };
-            topPanel.Controls.Add(txtChoices[i]);
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 8,
+            Padding = new Padding(8)
+        };
+        builder.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 160));
+        builder.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+
+        for (var i = 0; i < 7; i++)
+        {
+            builder.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
+        }
+        builder.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
+        _questionLabel = new Label { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft };
+        _correctLabel = new Label { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft };
+
+        _txtQuestion = new TextBox { Dock = DockStyle.Fill };
+
+        _txtChoices = new TextBox[4];
+        for (var i = 0; i < 4; i++)
+        {
+            _txtChoices[i] = new TextBox { Dock = DockStyle.Fill };
         }
 
-        cmbCorrect = new ComboBox { Width = 100 };
-        cmbCorrect.Items.AddRange(new[] { "1", "2", "3", "4" });
+        _cmbCorrect = new ComboBox
+        {
+            Dock = DockStyle.Left,
+            Width = 140,
+            DropDownStyle = ComboBoxStyle.DropDownList
+        };
+        _cmbCorrect.Items.AddRange(new object[] { "1", "2", "3", "4" });
 
-        var btnAdd = new Button { Text = "Add Question", Width = 150 };
-        btnAdd.Click += AddQuestion;
+        _btnAddQuestion = new Button { Width = 160, Height = 34, Anchor = AnchorStyles.Left };
+        _btnAddQuestion.Click += AddQuestion;
 
-        topPanel.Controls.Add(new Label { Text = "Title" });
-        topPanel.Controls.Add(txtTitle);
+        builder.Controls.Add(_questionLabel, 0, 0);
+        builder.Controls.Add(_txtQuestion, 1, 0);
 
-        topPanel.Controls.Add(new Label { Text = "Duration (minutes)" });
-        topPanel.Controls.Add(numDuration);
+        for (var i = 0; i < 4; i++)
+        {
+            builder.Controls.Add(new Label { Text = $"Choice {i + 1}", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, Tag = $"ChoiceLabel.{i + 1}" }, 0, i + 1);
+            builder.Controls.Add(_txtChoices[i], 1, i + 1);
+        }
 
-        topPanel.Controls.Add(new Label { Text = "Question" });
-        topPanel.Controls.Add(txtQuestion);
+        builder.Controls.Add(_correctLabel, 0, 5);
+        builder.Controls.Add(_cmbCorrect, 1, 5);
+        builder.Controls.Add(_btnAddQuestion, 1, 6);
 
-        topPanel.Controls.Add(new Label { Text = "Correct Answer (1-4)" });
-        topPanel.Controls.Add(cmbCorrect);
+        _questionGroup.Controls.Add(builder);
+    }
 
-        topPanel.Controls.Add(btnAdd);
+    private void BuildQuestionListUi()
+    {
+        var listLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2
+        };
+        listLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        listLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
 
-        // ===== Bottom Panel =====
-        var bottomPanel = new Panel { Dock = DockStyle.Fill };
-
-        lstQuestions = new ListView
+        _lstQuestions = new ListView
         {
             Dock = DockStyle.Fill,
             View = View.Details,
-            FullRowSelect = true
+            FullRowSelect = true,
+            MultiSelect = false
         };
+        _lstQuestions.Columns.Add("Question", -2);
+        _lstQuestions.DoubleClick += EditQuestion;
 
-        lstQuestions.Columns.Add("Question", -2);
-
-        var btnSave = new Button { Text = "Save Exam", Dock = DockStyle.Bottom };
-        btnSave.Click += SaveExam;
-
-        var btnLoad = new Button { Text = "Load Exam", Dock = DockStyle.Bottom };
-        btnLoad.Click += LoadExam;
-
-        var panelButtons = new FlowLayoutPanel
+        var buttons = new FlowLayoutPanel
         {
-            Dock = DockStyle.Bottom,
-            Height = 40
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.LeftToRight
         };
 
-        var btnEdit = new Button 
-        { 
-            Text = "✏ Edit",
-            Width = 120,
-            Height = 40
-        };
+        _btnSaveExam = new Button { Width = 110, Height = 34 };
+        _btnLoadExam = new Button { Width = 110, Height = 34 };
+        _btnEditQuestion = new Button { Width = 110, Height = 34 };
+        _btnDeleteQuestion = new Button { Width = 110, Height = 34 };
 
-        var btnDelete = new Button 
-        { 
-            Text = "🗑 Delete",
-            Width = 120,
-            Height = 40
-        };
+        _btnSaveExam.Click += SaveExam;
+        _btnLoadExam.Click += LoadExam;
+        _btnEditQuestion.Click += EditQuestion;
+        _btnDeleteQuestion.Click += DeleteQuestion;
 
-        btnEdit.Click += EditQuestion;
-        btnDelete.Click += DeleteQuestion;
+        buttons.Controls.Add(_btnSaveExam);
+        buttons.Controls.Add(_btnLoadExam);
+        buttons.Controls.Add(_btnEditQuestion);
+        buttons.Controls.Add(_btnDeleteQuestion);
 
-        panelButtons.Controls.Add(btnEdit);
-        panelButtons.Controls.Add(btnDelete);
+        listLayout.Controls.Add(_lstQuestions, 0, 0);
+        listLayout.Controls.Add(buttons, 0, 1);
+        _listGroup.Controls.Add(listLayout);
+    }
 
-        lstQuestions.DoubleClick += EditQuestion;
+    private void ApplyLocalization()
+    {
+        Text = Local("Designer.Title");
+        _examGroup.Text = Local("Designer.GroupExam");
+        _questionGroup.Text = Local("Designer.GroupQuestion");
+        _listGroup.Text = Local("Designer.GroupList");
 
-        bottomPanel.Controls.Add(lstQuestions);
-        bottomPanel.Controls.Add(btnSave);
-        bottomPanel.Controls.Add(btnLoad);
-        bottomPanel.Controls.Add(panelButtons);
+        _titleLabel.Text = Local("Designer.LabelTitle");
+        _durationLabel.Text = Local("Designer.LabelDuration");
+        _questionLabel.Text = Local("Designer.LabelQuestion");
+        _correctLabel.Text = Local("Designer.LabelCorrect");
 
-        main.Controls.Add(topPanel, 0, 0);
-        main.Controls.Add(bottomPanel, 0, 1);
+        _txtTitle.PlaceholderText = Local("Designer.PlaceholderTitle");
+        _txtQuestion.PlaceholderText = Local("Designer.PlaceholderQuestion");
+        for (var i = 0; i < _txtChoices.Length; i++)
+        {
+            _txtChoices[i].PlaceholderText = string.Format(Local("Designer.PlaceholderChoice"), i + 1);
+        }
 
-        Controls.Add(main);
+        foreach (Control c in _questionGroup.Controls[0].Controls)
+        {
+            if (c is Label lbl && lbl.Tag is string tag && tag.StartsWith("ChoiceLabel."))
+            {
+                var num = tag.Split('.')[1];
+                lbl.Text = string.Format(Local("Designer.PlaceholderChoice"), num);
+            }
+        }
 
+        _lstQuestions.Columns[0].Text = Local("Designer.ColumnQuestion");
+        _btnAddQuestion.Text = Local("Designer.ButtonAddQuestion");
+        _btnSaveExam.Text = Local("Designer.ButtonSaveExam");
+        _btnLoadExam.Text = Local("Designer.ButtonLoadExam");
+        _btnEditQuestion.Text = Local("Designer.ButtonEditQuestion");
+        _btnDeleteQuestion.Text = Local("Designer.ButtonDeleteQuestion");
+
+        _langToggleBtn.Text = _currentLanguage == AppLanguage.English ? "العربية" : "English";
+
+        RightToLeft = _currentLanguage == AppLanguage.Arabic ? RightToLeft.Yes : RightToLeft.No;
+        RightToLeftLayout = _currentLanguage == AppLanguage.Arabic;
+    }
+
+    private void ToggleLanguage()
+    {
+        _currentLanguage = _currentLanguage == AppLanguage.English ? AppLanguage.Arabic : AppLanguage.English;
+        ApplyLocalization();
     }
 
     private void AddQuestion(object? sender, EventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(txtQuestion.Text))
+        if (string.IsNullOrWhiteSpace(_txtQuestion.Text))
         {
-            MessageBox.Show("Enter question text");
+            MessageBox.Show(this, Local("Designer.MsgQuestionRequired"), Local("Designer.Caption"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
-        if (cmbCorrect.SelectedIndex < 0)
+        if (_cmbCorrect.SelectedIndex < 0)
         {
-            MessageBox.Show("Select correct answer");
+            MessageBox.Show(this, Local("Designer.MsgCorrectRequired"), Local("Designer.Caption"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
         var choices = new List<Choice>();
-
-        for (int i = 0; i < 4; i++)
+        for (var i = 0; i < 4; i++)
         {
-            if (string.IsNullOrWhiteSpace(txtChoices[i].Text))
+            if (string.IsNullOrWhiteSpace(_txtChoices[i].Text))
             {
-                MessageBox.Show($"Choice {i + 1} is empty");
+                MessageBox.Show(this, string.Format(Local("Designer.MsgChoiceEmpty"), i + 1), Local("Designer.Caption"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             choices.Add(new Choice
             {
-                Text = txtChoices[i].Text,
-                IsCorrect = (i == cmbCorrect.SelectedIndex)
+                Text = _txtChoices[i].Text.Trim(),
+                IsCorrect = i == _cmbCorrect.SelectedIndex
             });
         }
 
         var question = new Question
         {
-            Text = txtQuestion.Text,
+            Text = _txtQuestion.Text.Trim(),
             Choices = choices
         };
 
-        questions.Add(question);
-        lstQuestions.Items.Add(new ListViewItem(question.Text));
+        _questions.Add(question);
+        _lstQuestions.Items.Add(new ListViewItem(question.Text));
 
-        // Clear inputs
-        txtQuestion.Clear();
-        foreach (var c in txtChoices) c.Clear();
-        cmbCorrect.SelectedIndex = -1;
+        _txtQuestion.Clear();
+        foreach (var c in _txtChoices) c.Clear();
+        _cmbCorrect.SelectedIndex = -1;
     }
 
     private async void SaveExam(object? sender, EventArgs e)
     {
-        if (!_service.IsValidExam(txtTitle.Text, questions))
+        if (!_service.IsValidExam(_txtTitle.Text, _questions))
         {
-            MessageBox.Show("Enter title and add questions");
+            MessageBox.Show(this, Local("Designer.MsgTitleOrQuestions"), Local("Designer.Caption"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
         var exam = new Exam
         {
-            Title = txtTitle.Text,
-            DurationMinutes = (int)numDuration.Value,
-            Questions = questions
+            Title = _txtTitle.Text.Trim(),
+            DurationMinutes = (int)_numDuration.Value,
+            Questions = _questions
         };
 
-        var path = _service.BuildPath(ExamsFolder, txtTitle.Text);
-
+        var path = _service.BuildPath(ExamsFolder, _txtTitle.Text);
         await _service.SaveExamAsync(path, exam);
-
-        MessageBox.Show("Exam saved!");
+        MessageBox.Show(this, Local("Designer.MsgSaved"), Local("Designer.Caption"), MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 
     private async void LoadExam(object? sender, EventArgs e)
@@ -216,65 +363,63 @@ public sealed class ExamDesignerForm : Form
         var dialog = new OpenFileDialog
         {
             InitialDirectory = ExamsFolder,
-            Filter = "JSON Files (*.json)|*.json"
+            Filter = Local("Designer.FilterJson")
         };
 
-        if (dialog.ShowDialog() != DialogResult.OK)
+        if (dialog.ShowDialog(this) != DialogResult.OK)
             return;
 
         var exam = await _service.LoadExamAsync(dialog.FileName);
-
-        if (exam == null)
+        if (exam is null)
         {
-            MessageBox.Show("Failed to load exam");
+            MessageBox.Show(this, Local("Designer.MsgLoadFailed"), Local("Designer.Caption"), MessageBoxButtons.OK, MessageBoxIcon.Error);
             return;
         }
 
-        txtTitle.Text = exam.Title;
-        numDuration.Value = exam.DurationMinutes;
+        _txtTitle.Text = exam.Title;
+        _numDuration.Value = Math.Clamp(exam.DurationMinutes, 1, 180);
 
-        questions = exam.Questions ?? new();
+        _questions.Clear();
+        _questions.AddRange(exam.Questions ?? new List<Question>());
 
-        lstQuestions.Items.Clear();
-        foreach (var q in questions)
-            lstQuestions.Items.Add(q.Text);
+        _lstQuestions.Items.Clear();
+        foreach (var q in _questions)
+        {
+            _lstQuestions.Items.Add(new ListViewItem(q.Text));
+        }
     }
 
     private void EditQuestion(object? sender, EventArgs e)
     {
-        if (lstQuestions.SelectedIndices.Count == 0)
-            return;
-
-        int index = lstQuestions.SelectedIndices[0];
-
-        var existing = questions[index];
-
-        using var editor = new QuestionEditorForm(existing);
-
-        if (editor.ShowDialog() == DialogResult.OK && editor.Result != null)
+        if (_lstQuestions.SelectedIndices.Count == 0)
         {
-            questions[index] = editor.Result;
+            MessageBox.Show(this, Local("Designer.MsgSelectQuestionEdit"), Local("Designer.Caption"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
 
-            lstQuestions.Items[index].Text = editor.Result.Text;
+        var index = _lstQuestions.SelectedIndices[0];
+        using var editor = new QuestionEditorForm(_questions[index], _currentLanguage);
+        if (editor.ShowDialog(this) == DialogResult.OK && editor.Result is not null)
+        {
+            _questions[index] = editor.Result;
+            _lstQuestions.Items[index].Text = editor.Result.Text;
         }
     }
 
     private void DeleteQuestion(object? sender, EventArgs e)
     {
-        if (lstQuestions.SelectedIndices.Count == 0)
+        if (_lstQuestions.SelectedIndices.Count == 0)
+        {
+            MessageBox.Show(this, Local("Designer.MsgSelectQuestionDelete"), Local("Designer.Caption"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
+        }
 
-        int index = lstQuestions.SelectedIndices[0];
-
-        var result = MessageBox.Show(
-            "Delete this question?",
-            "Confirm",
-            MessageBoxButtons.YesNo);
-
+        var result = MessageBox.Show(this, Local("Designer.MsgDeleteConfirm"), Local("Designer.Caption"), MessageBoxButtons.YesNo, MessageBoxIcon.Question);
         if (result != DialogResult.Yes)
             return;
 
-        questions.RemoveAt(index);
-        lstQuestions.Items.RemoveAt(index);
+        var index = _lstQuestions.SelectedIndices[0];
+        _questions.RemoveAt(index);
+        _lstQuestions.Items.RemoveAt(index);
     }
 }
