@@ -2,7 +2,7 @@
 
 ## Goal
 
-Build a **demo MVP** that satisfies the lab form and demonstrates the required features clearly. This is not a production clone of NetSupport School. To finish in 4 hours, the app will use demo-safe versions of hard system features:
+Build a **demo MVP** that satisfies the lab form and demonstrates the required features clearly. This is not a production clone of NetSupport School. To finish in tight time, the app will use demo-safe versions of hard system features:
 
 - "Starts as a service" means the Student app can be launched at startup or opened manually for the demo.
 - "Lock/unlock computers" means the Student app shows a full-screen topmost lock screen and removes it when Tutor unlocks.
@@ -14,7 +14,7 @@ Build a **demo MVP** that satisfies the lab form and demonstrates the required f
 Use **C# / .NET 8 + WinForms + SignalR + JSON files**.
 
 - It is Windows-friendly and easy to package as zip folders.
-- WinForms is faster than WPF for a 4-hour lab MVP.
+- WinForms is faster than WPF for lab MVP.
 - SignalR avoids writing low-level socket code for live updates.
 - JSON storage is faster than SQLite for the first version and easier for AI agents to generate.
 
@@ -347,7 +347,7 @@ Collect this in `docs/SUBMISSION_FORM_DATA.md`:
 - Commit message format: `member-XX: short description`.
 - Each member should avoid editing files outside their assigned area unless coordinating with Team Leader.
 
-## What To Avoid In 4 Hours
+## What To Avoid 
 
 - Do not build a real Windows service installer unless everything else is finished.
 - Do not use real OS-level locking APIs.
