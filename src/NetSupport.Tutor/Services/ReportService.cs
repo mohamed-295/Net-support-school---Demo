@@ -4,6 +4,31 @@ namespace NetSupport.Tutor.Services;
 
 public sealed class ReportService
 {
+    public static string CalculateScore(Exam exam, List<StudentAnswer> answers)
+    {
+        var correctByQuestion = new Dictionary<string, string>();
+        foreach (var question in exam.Questions)
+        {
+            var correctChoice = question.Choices.FirstOrDefault(c => c.IsCorrect);
+            if (correctChoice != null)
+            {
+                correctByQuestion[question.Id] = correctChoice.Id;
+            }
+        }
+
+        var correctCount = 0;
+        foreach (var answer in answers)
+        {
+            if (correctByQuestion.TryGetValue(answer.QuestionId, out var correctId)
+                && string.Equals(answer.ChoiceId, correctId, StringComparison.OrdinalIgnoreCase))
+            {
+                correctCount++;
+            }
+        }
+
+        return $"{correctCount}/{exam.Questions.Count}";
+    }
+
     public static string CreateHtmlReport(IEnumerable<ReportRow> rows)
     {
         var tableRows = string.Join(Environment.NewLine, rows.Select(row =>
