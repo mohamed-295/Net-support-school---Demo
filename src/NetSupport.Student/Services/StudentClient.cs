@@ -80,7 +80,7 @@ namespace NetSupport.Student.Services
         _connection.On<TutorCommand>("ReceiveCommand", (command) =>
         {
             var hostForm = Application.OpenForms.Cast<Form>().FirstOrDefault();
-            hostForm?.Invoke(new Action(async () =>
+            hostForm?.Invoke(new Action(() =>
             {
                 switch (command.CommandType)
                 {
@@ -91,7 +91,7 @@ namespace NetSupport.Student.Services
                         HideLockScreen();
                         break;
                     case "StartTest":
-                        await HandleStartTestAsync(command);
+                        HandleStartTest(command);
                         break;
                     case "StopTest":
                         HandleStopTest();
@@ -130,15 +130,16 @@ namespace NetSupport.Student.Services
         _lockScreenForm = null;
     }
 
-    private async Task HandleStartTestAsync(TutorCommand command)
+    private void HandleStartTest(TutorCommand command)
     {
         _activeSessionId = command.SessionId ?? command.Exam?.Id ?? string.Empty;
-        var login = new TestLoginForm(_currentStudent.FullName);
-        if (login.ShowDialog() == DialogResult.OK)
+        if (command.Exam is null || command.Exam.Questions.Count == 0)
         {
-            _activeTestForm = new TestTakingForm(command.Exam!, _currentStudent.StudentId, _activeSessionId);
-            _activeTestForm.Show();
+            return;
         }
+
+        _activeTestForm = new TestTakingForm(command.Exam, _currentStudent.StudentId, _activeSessionId);
+        _activeTestForm.Show();
     }
 
     private void HandleStopTest()

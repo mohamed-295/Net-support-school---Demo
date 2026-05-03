@@ -20,7 +20,7 @@ public sealed class ReportService
                 <h1>NetSupport Test Report</h1>
                 <table border="1" cellspacing="0" cellpadding="8">
                     <thead>
-                        <tr><th>Student</th><th>Score</th><th>Answered</th><th>Total</th></tr>
+                        <tr><th>Student</th><th>Score (correct/total)</th><th>Answered</th><th>Total</th></tr>
                     </thead>
                     <tbody>
                         {{tableRows}}

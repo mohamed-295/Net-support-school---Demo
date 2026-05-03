@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using NetSupport.Shared.Contracts;
 using NetSupport.Shared.Localization;
@@ -114,7 +115,6 @@ public sealed class TutorDashboardForm : Form
             if (_gridStudents.CurrentRow?.DataBoundItem is StudentInfo student)
             {
                 _selectedStudent = student;
-                UpdateButtonStates();
             }
         };
 
@@ -143,7 +143,7 @@ public sealed class TutorDashboardForm : Form
                 Text = LocalizationResources.GetString(key, _currentLanguage),
                 Width = 110,
                 Height = 35,
-                Enabled = false,
+                Enabled = true,
                 Tag = key // Store key for retranslation
             };
             btn.Click += click;
@@ -322,7 +322,8 @@ public sealed class TutorDashboardForm : Form
         var exam = _sessionManager.ActiveSession?.Exam;
         if (exam is not null && exam.Questions.Count > 0)
         {
-            existing.Score = CalculateScorePercent(exam, answers);
+            var correct = CountCorrectAnswers(exam, answers);
+            existing.Score = $"{correct}/{exam.Questions.Count}";
         }
 
         _studentRegistry.Upsert(existing);
@@ -356,7 +357,6 @@ public sealed class TutorDashboardForm : Form
         if (_selectedStudent?.StudentId == studentId)
         {
             _selectedStudent = null;
-            UpdateButtonStates();
         }
     }
 
@@ -395,7 +395,7 @@ public sealed class TutorDashboardForm : Form
         }
     }
 
-    private static int CalculateScorePercent(Exam exam, List<StudentAnswer> answers)
+    private static int CountCorrectAnswers(Exam exam, List<StudentAnswer> answers)
     {
         var correctByQuestion = new Dictionary<string, string>();
         foreach (var question in exam.Questions)
@@ -420,23 +420,36 @@ public sealed class TutorDashboardForm : Form
             }
         }
 
-        if (exam.Questions.Count == 0)
-        {
-            return 0;
-        }
-
-        return (int)Math.Round(correctCount * 100.0 / exam.Questions.Count);
+        return correctCount;
     }
 
-    private void UpdateButtonStates()
+    private void ShowDashboardValidation(string messageKey)
     {
-        bool enabled = _selectedStudent != null;
+        MessageBox.Show(this,
+            LocalizationResources.GetString(messageKey, _currentLanguage),
+            LocalizationResources.GetString("Dashboard.MsgCaptionTutor", _currentLanguage),
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Warning);
+    }
 
-        foreach (Control control in GetAllControls(this))
+    /// <summary>Requires at least one connected student and a selected grid row (for commands sent to one student).</summary>
+    private bool TryRequireStudentForPerStudentCommand([NotNullWhen(true)] out StudentInfo? student)
+    {
+        student = null;
+        if (_bindingList.Count == 0)
         {
-            if (control is Button btn)
-                btn.Enabled = enabled;
+            ShowDashboardValidation("Dashboard.MsgNoStudentsConnected");
+            return false;
         }
+
+        if (_selectedStudent == null)
+        {
+            ShowDashboardValidation("Dashboard.MsgSelectStudentFirst");
+            return false;
+        }
+
+        student = _selectedStudent;
+        return true;
     }
 
     private IEnumerable<Control> GetAllControls(Control parent)
@@ -452,7 +465,7 @@ public sealed class TutorDashboardForm : Form
     // ================= Actions =================
     private async void LockStudent(object? sender, EventArgs e)
     {
-        if (_selectedStudent == null)
+        if (!TryRequireStudentForPerStudentCommand(out var student))
         {
             return;
         }
@@ -467,12 +480,12 @@ public sealed class TutorDashboardForm : Form
             CommandType = "Lock"
         };
 
-        await _tutorServer.SendCommandToStudentAsync(_selectedStudent.StudentId, command);
+        await _tutorServer.SendCommandToStudentAsync(student.StudentId, command);
     }
 
     private async void UnlockStudent(object? sender, EventArgs e)
     {
-        if (_selectedStudent == null)
+        if (!TryRequireStudentForPerStudentCommand(out var student))
         {
             return;
         }
@@ -487,20 +500,18 @@ public sealed class TutorDashboardForm : Form
             CommandType = "Unlock"
         };
 
-        await _tutorServer.SendCommandToStudentAsync(_selectedStudent.StudentId, command);
+        await _tutorServer.SendCommandToStudentAsync(student.StudentId, command);
     }
 
     private void SetupTest(object? sender, EventArgs e)
     {
-        if (_selectedStudent == null) return;
-
-        using var form = new TestSetupForm(_studentRegistry, _tutorServer, _sessionManager);
+        using var form = new TestSetupForm(_studentRegistry, _tutorServer, _sessionManager, _currentLanguage);
         form.ShowDialog(this);
     }
 
     private async void StartTest(object? sender, EventArgs e)
     {
-        if (_selectedStudent == null)
+        if (!TryRequireStudentForPerStudentCommand(out var student))
         {
             return;
         }
@@ -519,14 +530,17 @@ public sealed class TutorDashboardForm : Form
         var exam = await JsonFileStore.LoadAsync<Exam>(examPath);
         if (exam is null || exam.Questions.Count == 0)
         {
-            MessageBox.Show(this, "Selected exam is empty or invalid.", "Test Setup", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(this,
+                LocalizationResources.GetString("Dashboard.MsgInvalidExam", _currentLanguage),
+                LocalizationResources.GetString("Dashboard.MsgCaptionTest", _currentLanguage),
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
         var durationMinutes = exam.DurationMinutes > 0 ? exam.DurationMinutes : 10;
         exam.DurationMinutes = durationMinutes;
 
-        var session = _sessionManager.CreateSession(exam, durationMinutes, new[] { _selectedStudent.StudentId });
+        var session = _sessionManager.CreateSession(exam, durationMinutes, new[] { student.StudentId });
 
         var command = new TutorCommand
         {
@@ -536,13 +550,19 @@ public sealed class TutorDashboardForm : Form
             DurationMinutes = durationMinutes
         };
 
-        await _tutorServer.SendCommandToStudentAsync(_selectedStudent.StudentId, command);
+        await _tutorServer.SendCommandToStudentAsync(student.StudentId, command);
     }
 
     private async void StopTest(object? sender, EventArgs e)
     {
-        if (_selectedStudent == null)
+        if (!TryRequireStudentForPerStudentCommand(out var student))
         {
+            return;
+        }
+
+        if (!_sessionManager.HasActiveSession)
+        {
+            ShowDashboardValidation("Dashboard.MsgNoActiveTest");
             return;
         }
 
@@ -557,13 +577,16 @@ public sealed class TutorDashboardForm : Form
             SessionId = _sessionManager.ActiveSession?.Id ?? string.Empty
         };
 
-        await _tutorServer.SendCommandToStudentAsync(_selectedStudent.StudentId, command);
+        await _tutorServer.SendCommandToStudentAsync(student.StudentId, command);
         _sessionManager.StopSession();
     }
 
     private void OpenLiveTracking(object? sender, EventArgs e)
     {
-        if (_selectedStudent == null) return;
+        if (!TryRequireStudentForPerStudentCommand(out _))
+        {
+            return;
+        }
 
         var form = new LiveTrackingForm();
         form.Show(this);
@@ -571,7 +594,10 @@ public sealed class TutorDashboardForm : Form
 
     private void OpenReport(object? sender, EventArgs e)
     {
-        if (_selectedStudent == null) return;
+        if (!TryRequireStudentForPerStudentCommand(out _))
+        {
+            return;
+        }
 
         using var form = new ReportForm();
         form.ShowDialog(this);
@@ -591,7 +617,10 @@ public sealed class TutorDashboardForm : Form
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, $"Failed to start the tutor server: {ex.Message}", "Server", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(this,
+                string.Format(LocalizationResources.GetString("TestSetup.MsgServerStartFailed", _currentLanguage), ex.Message),
+                LocalizationResources.GetString("TestSetup.MsgServerCaption", _currentLanguage),
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
             return false;
         }
     }
@@ -656,10 +685,10 @@ public sealed class TutorDashboardForm : Form
     {
         var students = new[]
         {
-            new StudentInfo { FullName="Ahmed Hassan", MachineName="PC-LAB-01", Status="Active", AnsweredCount=12, Score=85, LastSeenUtc=DateTime.UtcNow.AddSeconds(-5)},
-            new StudentInfo { FullName="Fatima Mohamed", MachineName="PC-LAB-02", Status="In Test", AnsweredCount=8, Score=72, LastSeenUtc=DateTime.UtcNow.AddSeconds(-30)},
-            new StudentInfo { FullName="Omar Ali", MachineName="PC-LAB-03", Status="Idle", AnsweredCount=0, Score=0, LastSeenUtc=DateTime.UtcNow.AddMinutes(-2)},
-            new StudentInfo { FullName="Noor Khalid", MachineName="PC-LAB-04", Status="Active", AnsweredCount=20, Score=95, LastSeenUtc=DateTime.UtcNow.AddSeconds(-15)}
+            new StudentInfo { FullName="Ahmed Hassan", MachineName="PC-LAB-01", Status="Active", AnsweredCount=12, Score="10/12", LastSeenUtc=DateTime.UtcNow.AddSeconds(-5)},
+            new StudentInfo { FullName="Fatima Mohamed", MachineName="PC-LAB-02", Status="In Test", AnsweredCount=8, Score="6/10", LastSeenUtc=DateTime.UtcNow.AddSeconds(-30)},
+            new StudentInfo { FullName="Omar Ali", MachineName="PC-LAB-03", Status="Idle", AnsweredCount=0, Score="", LastSeenUtc=DateTime.UtcNow.AddMinutes(-2)},
+            new StudentInfo { FullName="Noor Khalid", MachineName="PC-LAB-04", Status="Active", AnsweredCount=20, Score="19/20", LastSeenUtc=DateTime.UtcNow.AddSeconds(-15)}
         };
 
         foreach (var s in students)

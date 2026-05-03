@@ -1,4 +1,5 @@
 using NetSupport.Shared.Contracts;
+using NetSupport.Shared.Localization;
 using NetSupport.Shared.Models;
 using NetSupport.Shared.Storage;
 using NetSupport.Tutor.Server;
@@ -25,9 +26,16 @@ public sealed class TestSetupForm : Form
     private readonly Button _clearSelectionButton;
     private readonly Button _browseExamButton;
     private readonly Button _refreshExamsButton;
+    private readonly AppLanguage _language;
+    private readonly Label _headerLabel;
+    private readonly GroupBox _studentsGroup;
+    private readonly GroupBox _examGroup;
+    private readonly Label _durationCaptionLabel;
+    private readonly Button _closeButton;
+    private readonly Label _noStudentsHintLabel;
 
     public TestSetupForm()
-        : this(null, null, new TestSessionManager(), FindDefaultExamFolder())
+        : this(null, null, new TestSessionManager(), FindDefaultExamFolder(), AppLanguage.English)
     {
     }
 
@@ -35,7 +43,7 @@ public sealed class TestSetupForm : Form
         StudentRegistry? studentRegistry,
         TutorServer? tutorServer,
         TestSessionManager sessionManager)
-        : this(studentRegistry, tutorServer, sessionManager, FindDefaultExamFolder())
+        : this(studentRegistry, tutorServer, sessionManager, FindDefaultExamFolder(), AppLanguage.English)
     {
     }
 
@@ -43,14 +51,25 @@ public sealed class TestSetupForm : Form
         StudentRegistry? studentRegistry,
         TutorServer? tutorServer,
         TestSessionManager sessionManager,
-        string examsFolder)
+        AppLanguage language)
+        : this(studentRegistry, tutorServer, sessionManager, FindDefaultExamFolder(), language)
+    {
+    }
+
+    public TestSetupForm(
+        StudentRegistry? studentRegistry,
+        TutorServer? tutorServer,
+        TestSessionManager sessionManager,
+        string examsFolder,
+        AppLanguage language = AppLanguage.English)
     {
         _studentRegistry = studentRegistry;
         _tutorServer = tutorServer;
         _sessionManager = sessionManager;
         _examsFolder = examsFolder;
+        _language = language;
 
-        Text = "Test Setup";
+        Text = LocalizationResources.GetString("TestSetup.Title", _language);
         Width = 980;
         Height = 640;
         StartPosition = FormStartPosition.CenterParent;
@@ -69,9 +88,9 @@ public sealed class TestSetupForm : Form
             }
         };
 
-        var header = new Label
+        _headerLabel = new Label
         {
-            Text = "Test Setup",
+            Text = LocalizationResources.GetString("TestSetup.Title", _language),
             Dock = DockStyle.Fill,
             Font = new Font("Segoe UI", 14, FontStyle.Bold),
             TextAlign = ContentAlignment.MiddleLeft
@@ -97,21 +116,21 @@ public sealed class TestSetupForm : Form
         };
         _studentsList.ItemCheck += (_, __) => BeginInvoke(UpdateActionButtons);
 
-        _refreshStudentsButton = new Button { Text = "Refresh", AutoSize = true };
+        _refreshStudentsButton = new Button { Text = LocalizationResources.GetString("TestSetup.Refresh", _language), AutoSize = true };
         _refreshStudentsButton.Click += (_, __) =>
         {
             LoadStudents();
             UpdateActionButtons();
         };
 
-        _selectAllButton = new Button { Text = "Select All", AutoSize = true };
+        _selectAllButton = new Button { Text = LocalizationResources.GetString("TestSetup.SelectAll", _language), AutoSize = true };
         _selectAllButton.Click += (_, __) =>
         {
             SetAllStudentChecks(true);
             UpdateActionButtons();
         };
 
-        _clearSelectionButton = new Button { Text = "Clear", AutoSize = true };
+        _clearSelectionButton = new Button { Text = LocalizationResources.GetString("TestSetup.Clear", _language), AutoSize = true };
         _clearSelectionButton.Click += (_, __) =>
         {
             SetAllStudentChecks(false);
@@ -144,14 +163,29 @@ public sealed class TestSetupForm : Form
             }
         };
         studentsLayout.Controls.Add(studentActionPanel, 0, 0);
-        studentsLayout.Controls.Add(_studentsList, 0, 1);
 
-        var studentsGroup = new GroupBox
+        _noStudentsHintLabel = new Label
+        {
+            Dock = DockStyle.Top,
+            Height = 44,
+            AutoSize = false,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Padding = new Padding(4, 8, 4, 4),
+            ForeColor = SystemColors.GrayText,
+            Visible = false
+        };
+        var listHost = new Panel { Dock = DockStyle.Fill };
+        listHost.Controls.Add(_noStudentsHintLabel);
+        _studentsList.Dock = DockStyle.Fill;
+        listHost.Controls.Add(_studentsList);
+        studentsLayout.Controls.Add(listHost, 0, 1);
+
+        _studentsGroup = new GroupBox
         {
             Dock = DockStyle.Fill,
-            Text = "Students"
+            Text = LocalizationResources.GetString("TestSetup.StudentsGroup", _language)
         };
-        studentsGroup.Controls.Add(studentsLayout);
+        _studentsGroup.Controls.Add(studentsLayout);
 
         _examCombo = new ComboBox
         {
@@ -165,10 +199,10 @@ public sealed class TestSetupForm : Form
             UpdateActionButtons();
         };
 
-        _browseExamButton = new Button { Text = "Browse...", AutoSize = true };
+        _browseExamButton = new Button { Text = LocalizationResources.GetString("TestSetup.Browse", _language), AutoSize = true };
         _browseExamButton.Click += async (_, __) => await BrowseForExamAsync();
 
-        _refreshExamsButton = new Button { Text = "Reload", AutoSize = true };
+        _refreshExamsButton = new Button { Text = LocalizationResources.GetString("TestSetup.Reload", _language), AutoSize = true };
         _refreshExamsButton.Click += async (_, __) => await LoadExamOptionsAsync();
 
         var examSelectorLayout = new TableLayoutPanel
@@ -191,7 +225,7 @@ public sealed class TestSetupForm : Form
         {
             Dock = DockStyle.Fill,
             AutoSize = true,
-            Text = "Select an exam to see details."
+            Text = LocalizationResources.GetString("TestSetup.SelectExamHint", _language)
         };
 
         _examPathLabel = new Label
@@ -218,12 +252,13 @@ public sealed class TestSetupForm : Form
             FlowDirection = FlowDirection.LeftToRight,
             WrapContents = false
         };
-        durationLayout.Controls.Add(new Label
+        _durationCaptionLabel = new Label
         {
-            Text = "Duration (minutes):",
+            Text = LocalizationResources.GetString("TestSetup.DurationMinutes", _language),
             AutoSize = true,
             Padding = new Padding(0, 6, 4, 0)
-        });
+        };
+        durationLayout.Controls.Add(_durationCaptionLabel);
         durationLayout.Controls.Add(_durationMinutes);
 
         var examLayout = new TableLayoutPanel
@@ -244,19 +279,19 @@ public sealed class TestSetupForm : Form
         examLayout.Controls.Add(_examPathLabel, 0, 2);
         examLayout.Controls.Add(durationLayout, 0, 3);
 
-        var examGroup = new GroupBox
+        _examGroup = new GroupBox
         {
             Dock = DockStyle.Fill,
-            Text = "Exam & Timing"
+            Text = LocalizationResources.GetString("TestSetup.ExamGroup", _language)
         };
-        examGroup.Controls.Add(examLayout);
+        _examGroup.Controls.Add(examLayout);
 
-        contentLayout.Controls.Add(studentsGroup, 0, 0);
-        contentLayout.Controls.Add(examGroup, 1, 0);
+        contentLayout.Controls.Add(_studentsGroup, 0, 0);
+        contentLayout.Controls.Add(_examGroup, 1, 0);
 
         _startButton = new Button
         {
-            Text = "Start Test",
+            Text = LocalizationResources.GetString("TestSetup.StartTest", _language),
             Width = 120,
             Height = 36
         };
@@ -264,19 +299,19 @@ public sealed class TestSetupForm : Form
 
         _stopButton = new Button
         {
-            Text = "Stop Test",
+            Text = LocalizationResources.GetString("TestSetup.StopTest", _language),
             Width = 120,
             Height = 36
         };
         _stopButton.Click += StopTestClicked;
 
-        var closeButton = new Button
+        _closeButton = new Button
         {
-            Text = "Close",
+            Text = LocalizationResources.GetString("TestSetup.Close", _language),
             Width = 120,
             Height = 36
         };
-        closeButton.Click += (_, __) => Close();
+        _closeButton.Click += (_, __) => Close();
 
         var actionPanel = new FlowLayoutPanel
         {
@@ -284,15 +319,17 @@ public sealed class TestSetupForm : Form
             FlowDirection = FlowDirection.RightToLeft,
             WrapContents = false
         };
-        actionPanel.Controls.Add(closeButton);
+        actionPanel.Controls.Add(_closeButton);
         actionPanel.Controls.Add(_stopButton);
         actionPanel.Controls.Add(_startButton);
 
-        mainLayout.Controls.Add(header, 0, 0);
+        mainLayout.Controls.Add(_headerLabel, 0, 0);
         mainLayout.Controls.Add(contentLayout, 0, 1);
         mainLayout.Controls.Add(actionPanel, 0, 2);
 
         Controls.Add(mainLayout);
+
+        ApplyRtlLayout();
 
         Load += async (_, __) =>
         {
@@ -302,30 +339,26 @@ public sealed class TestSetupForm : Form
         };
     }
 
+    private void ApplyRtlLayout()
+    {
+        var rtl = _language == AppLanguage.Arabic;
+        RightToLeft = rtl ? RightToLeft.Yes : RightToLeft.No;
+        RightToLeftLayout = rtl;
+    }
+
     private void LoadStudents()
     {
         _studentsList.Items.Clear();
 
         var students = _studentRegistry?.Students?.ToList() ?? new List<StudentInfo>();
-        if (students.Count == 0)
-        {
-            students = CreateSampleStudents();
-        }
+
+        _noStudentsHintLabel.Text = LocalizationResources.GetString("TestSetup.NoStudentsHint", _language);
+        _noStudentsHintLabel.Visible = students.Count == 0;
 
         foreach (var student in students)
         {
             _studentsList.Items.Add(new StudentListItem(student), false);
         }
-    }
-
-    private static List<StudentInfo> CreateSampleStudents()
-    {
-        return new List<StudentInfo>
-        {
-            new StudentInfo { StudentId = "ST-001", FullName = "Ahmed Hassan", MachineName = "PC-LAB-01", Status = "Connected" },
-            new StudentInfo { StudentId = "ST-002", FullName = "Fatima Mohamed", MachineName = "PC-LAB-02", Status = "Connected" },
-            new StudentInfo { StudentId = "ST-003", FullName = "Omar Ali", MachineName = "PC-LAB-03", Status = "Connected" }
-        };
     }
 
     private async Task LoadExamOptionsAsync()
@@ -334,7 +367,7 @@ public sealed class TestSetupForm : Form
 
         if (!Directory.Exists(_examsFolder))
         {
-            _examSummaryLabel.Text = "Exam folder not found.";
+            _examSummaryLabel.Text = LocalizationResources.GetString("TestSetup.ExamFolderNotFound", _language);
             _examPathLabel.Text = _examsFolder;
             return;
         }
@@ -360,7 +393,7 @@ public sealed class TestSetupForm : Form
         }
         else
         {
-            _examSummaryLabel.Text = "No exam files found.";
+            _examSummaryLabel.Text = LocalizationResources.GetString("TestSetup.NoExamFiles", _language);
             _examPathLabel.Text = _examsFolder;
         }
     }
@@ -383,7 +416,10 @@ public sealed class TestSetupForm : Form
         var exam = await JsonFileStore.LoadAsync<Exam>(dialog.FileName);
         if (exam is null)
         {
-            MessageBox.Show(this, "Could not load the selected exam file.", "Exam Load", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(this,
+                LocalizationResources.GetString("TestSetup.MsgExamLoadFailed", _language),
+                LocalizationResources.GetString("TestSetup.MsgExamLoadCaption", _language),
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
@@ -396,7 +432,7 @@ public sealed class TestSetupForm : Form
     {
         if (_examCombo.SelectedItem is not ExamFileOption option)
         {
-            _examSummaryLabel.Text = "Select an exam to see details.";
+            _examSummaryLabel.Text = LocalizationResources.GetString("TestSetup.SelectExamHint", _language);
             _examPathLabel.Text = string.Empty;
             return;
         }
@@ -407,7 +443,10 @@ public sealed class TestSetupForm : Form
             ? Path.GetFileName(option.FilePath)
             : exam.Title;
 
-        _examSummaryLabel.Text = $"{title} (Questions: {questionCount})";
+        _examSummaryLabel.Text = string.Format(
+            LocalizationResources.GetString("TestSetup.ExamSummaryFormat", _language),
+            title,
+            questionCount);
         _examPathLabel.Text = option.FilePath;
 
         var duration = Math.Clamp(exam.DurationMinutes, 1, 240);
@@ -418,20 +457,29 @@ public sealed class TestSetupForm : Form
     {
         if (_sessionManager.HasActiveSession)
         {
-            MessageBox.Show(this, "A test session is already running.", "Test Session", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(this,
+                LocalizationResources.GetString("TestSetup.MsgSessionRunning", _language),
+                LocalizationResources.GetString("TestSetup.MsgTestSessionCaption", _language),
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }
 
         var studentIds = GetSelectedStudentIds();
         if (studentIds.Count == 0)
         {
-            MessageBox.Show(this, "Select at least one student.", "Test Setup", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(this,
+                LocalizationResources.GetString("TestSetup.MsgSelectStudent", _language),
+                LocalizationResources.GetString("TestSetup.MsgTestSetupCaption", _language),
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
         if (_examCombo.SelectedItem is not ExamFileOption option)
         {
-            MessageBox.Show(this, "Select an exam before starting.", "Test Setup", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(this,
+                LocalizationResources.GetString("TestSetup.MsgSelectExam", _language),
+                LocalizationResources.GetString("TestSetup.MsgTestSetupCaption", _language),
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
@@ -454,7 +502,10 @@ public sealed class TestSetupForm : Form
 
         await SendCommandToStudentsAsync(studentIds, command);
 
-        MessageBox.Show(this, "Start command sent to selected students.", "Test Started", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        MessageBox.Show(this,
+            LocalizationResources.GetString("TestSetup.MsgStartSent", _language),
+            LocalizationResources.GetString("TestSetup.MsgTestStarted", _language),
+            MessageBoxButtons.OK, MessageBoxIcon.Information);
         UpdateActionButtons();
     }
 
@@ -468,7 +519,10 @@ public sealed class TestSetupForm : Form
 
         if (studentIds.Count == 0)
         {
-            MessageBox.Show(this, "Select at least one student to stop.", "Test Setup", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(this,
+                LocalizationResources.GetString("TestSetup.MsgSelectStop", _language),
+                LocalizationResources.GetString("TestSetup.MsgTestSetupCaption", _language),
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
@@ -486,7 +540,10 @@ public sealed class TestSetupForm : Form
         await SendCommandToStudentsAsync(studentIds, command);
         _sessionManager.StopSession();
 
-        MessageBox.Show(this, "Stop command sent.", "Test Stopped", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        MessageBox.Show(this,
+            LocalizationResources.GetString("TestSetup.MsgStopSent", _language),
+            LocalizationResources.GetString("TestSetup.MsgTestStopped", _language),
+            MessageBoxButtons.OK, MessageBoxIcon.Information);
         UpdateActionButtons();
     }
 
@@ -494,7 +551,10 @@ public sealed class TestSetupForm : Form
     {
         if (_tutorServer is null)
         {
-            MessageBox.Show(this, "Tutor server is not available.", "Server", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(this,
+                LocalizationResources.GetString("TestSetup.MsgServerUnavailable", _language),
+                LocalizationResources.GetString("TestSetup.MsgServerCaption", _language),
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return false;
         }
 
@@ -510,7 +570,10 @@ public sealed class TestSetupForm : Form
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, $"Failed to start the tutor server: {ex.Message}", "Server", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(this,
+                string.Format(LocalizationResources.GetString("TestSetup.MsgServerStartFailed", _language), ex.Message),
+                LocalizationResources.GetString("TestSetup.MsgServerCaption", _language),
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
             return false;
         }
     }

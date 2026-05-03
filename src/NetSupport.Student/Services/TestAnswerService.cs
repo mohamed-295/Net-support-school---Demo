@@ -7,7 +7,13 @@ namespace NetSupport.Student.Services;
 
 public static class TestAnswerService
 {
-    public static async Task SendProgressAsync(string studentId, string sessionId, int answeredCount, int totalQuestions, string status = "Testing")
+    public static async Task SendProgressAsync(
+        string studentId,
+        string sessionId,
+        int answeredCount,
+        int totalQuestions,
+        string status = "Testing",
+        int remainingSeconds = 0)
     {
         if (StudentClient.Connection == null)
         {
@@ -20,7 +26,7 @@ public static class TestAnswerService
             SessionId = sessionId,
             AnsweredCount = answeredCount,
             TotalQuestions = totalQuestions,
-            RemainingSeconds = 0,
+            RemainingSeconds = remainingSeconds,
             Status = status
         };
 
