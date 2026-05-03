@@ -6,7 +6,6 @@ The full team handoff plan is maintained at the repository root:
 
 Use it for:
 
-- 4-hour schedule.
 - Repo and folder architecture.
 - Member task split.
 - Branch names.
