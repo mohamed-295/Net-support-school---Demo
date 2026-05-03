@@ -113,15 +113,6 @@ flowchart LR
     StudentApp2 -->|"answers and progress"| TutorHub
 ```
 
-## 4-Hour Work Schedule
-
-- 0:00-0:20: Team Leader creates solution, folders, README, branches, and base shared project.
-- 0:20-1:00: Everyone builds their assigned screen/service using shared models.
-- 1:00-2:15: Tutor, Student, and Designer features are connected together.
-- 2:15-3:00: Integration, bug fixing, sample exams, Arabic/RTL labels.
-- 3:00-3:30: Publish apps into `output/setup`, create zip, write docs.
-- 3:30-4:00: Record video, show commits/branches, fill form data, final test.
-
 ## Team Rules
 
 - Every member works on their own branch, for example `feature/member-02-tutor-dashboard`.
@@ -347,17 +338,6 @@ Collect this in `docs/SUBMISSION_FORM_DATA.md`:
 - Setup zip under 100 MB.
 - Future-year feature suggestions: real Windows service installer, real remote screen view, file distribution, chat, attendance analytics, browser lockdown, question bank import/export, role-based accounts, cloud classroom mode.
 - Lab rating from 1 to 5.
-
-## 5-Minute Video Script
-
-- 0:00-0:30: show team names, repo link, branches, and commit history from all members.
-- 0:30-1:00: show Designer creating/loading MCQ exam.
-- 1:00-1:40: show Tutor server and students auto-detected.
-- 1:40-2:10: show lock/unlock.
-- 2:10-3:20: show test setup, student login, navigation, answer submission.
-- 3:20-4:10: show live tracking and stop test.
-- 4:10-4:40: show printable report.
-- 4:40-5:00: show Arabic support and setup zip.
 
 ## Git Workflow
 
