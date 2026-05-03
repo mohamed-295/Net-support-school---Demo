@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using NetSupport.Shared.Contracts;
 using NetSupport.Shared.Localization;
 using NetSupport.Shared.Models;
 using NetSupport.Tutor.Server;
@@ -279,16 +280,18 @@ public sealed class TutorDashboardForm : Form
     }
 
     // ================= Actions =================
-    private void LockStudent(object? sender, EventArgs e)
+    private async void LockStudent(object? sender, EventArgs e)
     {
         if (_selectedStudent == null) return;
-        MessageBox.Show($"Locking {_selectedStudent.FullName}");
+        var command = new TutorCommand { CommandType = "Lock" };
+        await _tutorServer.SendCommandToStudentAsync(_selectedStudent.StudentId, command);
     }
 
-    private void UnlockStudent(object? sender, EventArgs e)
+    private async void UnlockStudent(object? sender, EventArgs e)
     {
         if (_selectedStudent == null) return;
-        MessageBox.Show($"Unlocking {_selectedStudent.FullName}");
+        var command = new TutorCommand { CommandType = "Unlock" };
+        await _tutorServer.SendCommandToStudentAsync(_selectedStudent.StudentId, command);
     }
 
     private void SetupTest(object? sender, EventArgs e)
