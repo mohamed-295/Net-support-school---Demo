@@ -48,12 +48,14 @@ public sealed class TutorHub : Hub
     // Called by a Student app to report test progress (answered count, remaining time, status).
     public async Task SendProgress(StudentProgress progress)
     {
+        TutorServer.Instance.NotifyProgressUpdated(progress);
         await Clients.Others.SendAsync("ProgressUpdated", progress);
     }
 
     // Called by a Student app to submit its final answers for scoring.
     public async Task SubmitAnswers(string studentId, List<StudentAnswer> answers)
     {
+        TutorServer.Instance.NotifyAnswersSubmitted(studentId, answers);
         await Clients.Others.SendAsync("AnswersSubmitted", studentId, answers);
     }
 
@@ -97,6 +99,8 @@ public sealed class TutorHub : Hub
                 Status = "Disconnected",
                 LastSeenUtc = DateTime.UtcNow
             };
+
+            TutorServer.Instance.NotifyStudentDisconnected(disconnected);
 
             await Clients.Others.SendAsync("StudentDisconnected", disconnected);
         }

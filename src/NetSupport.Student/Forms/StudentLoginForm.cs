@@ -92,6 +92,7 @@ public sealed class StudentLoginForm : Form
             await client.ConnectAsync(txtTutorUrl.Text, studentInfo);
 
             var homeForm = new StudentHomeForm(client, studentInfo);
+            homeForm.FormClosed += (_, __) => Close();
             homeForm.Show();
             this.Hide();
         }

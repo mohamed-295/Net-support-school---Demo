@@ -13,4 +13,9 @@ public sealed class StudentRegistry
         student.LastSeenUtc = DateTime.UtcNow;
         _students[student.StudentId] = student;
     }
+
+    public bool Remove(string studentId)
+    {
+        return _students.Remove(studentId);
+    }
 }

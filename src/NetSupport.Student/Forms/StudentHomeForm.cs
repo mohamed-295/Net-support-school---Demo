@@ -130,4 +130,10 @@ public sealed class StudentHomeForm : Form
         lblCommandReceived.Text = $"Last Command from Tutor: {command}";
         lblCommandReceived.ForeColor = Color.Blue;
     }
+
+    protected override void OnFormClosed(FormClosedEventArgs e)
+    {
+        _ = _client.StopAsync();
+        base.OnFormClosed(e);
+    }
 }

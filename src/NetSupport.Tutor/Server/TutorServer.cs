@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using NetSupport.Shared.Models;
 using System.Threading.Tasks;
 using System;
+using System.Collections.Generic;
 
 namespace NetSupport.Tutor.Server;
 
@@ -23,6 +24,9 @@ public sealed class TutorServer : IAsyncDisposable
 
     public event Action<StudentInfo> OnStudentRegistered;
     public event Action<StudentInfo> OnHeartbeatReceived;
+    public event Action<StudentInfo> OnStudentDisconnected;
+    public event Action<StudentProgress> OnProgressUpdated;
+    public event Action<string, List<StudentAnswer>> OnAnswersSubmitted;
 
     // The URL the server listens on.
     // Default: http://0.0.0.0:5000 (accepts connections from any machine on the LAN).
@@ -44,6 +48,21 @@ public sealed class TutorServer : IAsyncDisposable
     public void NotifyHeartbeatReceived(StudentInfo student)
     {
         OnHeartbeatReceived?.Invoke(student);
+    }
+
+    public void NotifyStudentDisconnected(StudentInfo student)
+    {
+        OnStudentDisconnected?.Invoke(student);
+    }
+
+    public void NotifyProgressUpdated(StudentProgress progress)
+    {
+        OnProgressUpdated?.Invoke(progress);
+    }
+
+    public void NotifyAnswersSubmitted(string studentId, List<StudentAnswer> answers)
+    {
+        OnAnswersSubmitted?.Invoke(studentId, answers);
     }
 
 

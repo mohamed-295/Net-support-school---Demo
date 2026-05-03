@@ -1,7 +1,9 @@
 using System.ComponentModel;
+using System.Threading.Tasks;
 using NetSupport.Shared.Contracts;
 using NetSupport.Shared.Localization;
 using NetSupport.Shared.Models;
+using NetSupport.Shared.Storage;
 using NetSupport.Tutor.Server;
 using NetSupport.Tutor.Services;
 
@@ -11,7 +13,7 @@ public sealed class TutorDashboardForm : Form
 {
     private readonly StudentRegistry _studentRegistry;
     private readonly TutorServer _tutorServer;
-    private readonly TestSessionManager _testSessionManager;
+    private readonly TestSessionManager _sessionManager;
     private readonly DataGridView _gridStudents;
     private readonly System.Windows.Forms.Timer _refreshTimer;
     private Label _titleLabel;
@@ -20,6 +22,7 @@ public sealed class TutorDashboardForm : Form
     private BindingList<StudentInfo> _bindingList = new();
     private StudentInfo? _selectedStudent;
     private bool _isRefreshing = false;
+    private string? _lastExamPath;
 
     public TutorDashboardForm()
     {
@@ -31,7 +34,7 @@ public sealed class TutorDashboardForm : Form
 
         _studentRegistry = new StudentRegistry();
         _tutorServer = TutorServer.Instance;
-        _testSessionManager = new TestSessionManager();
+        _sessionManager = new TestSessionManager();
 
         // ================= Layout =================
         var mainPanel = new TableLayoutPanel
@@ -157,38 +160,11 @@ public sealed class TutorDashboardForm : Form
         _bindingList = new BindingList<StudentInfo>();
         _gridStudents.DataSource = _bindingList;
 
-        AddSampleStudents();
-
-        // ================= Real-time Linking =================
-        _tutorServer.OnStudentRegistered += (student) =>
-        {
-            if (this.IsHandleCreated)
-            {
-                this.Invoke(new Action(() => 
-                {
-                
-                    var exists = _bindingList.Any(s => s.StudentId == student.StudentId);
-                    if (!exists)
-                    {
-                        _bindingList.Add(student);
-                        _studentRegistry.Upsert(student);
-                    }
-                }));
-            }
-        };
-
-        _tutorServer.OnHeartbeatReceived += (student) =>
-        {
-            if (this.IsHandleCreated)
-            {
-                this.Invoke(new Action(() => 
-                {
-                    _studentRegistry.Upsert(student);
-                    _gridStudents.Refresh(); 
-                }));
-            }
-        };
-
+        _tutorServer.OnStudentRegistered += HandleStudentRegistered;
+        _tutorServer.OnHeartbeatReceived += HandleHeartbeatReceived;
+        _tutorServer.OnStudentDisconnected += HandleStudentDisconnected;
+        _tutorServer.OnProgressUpdated += HandleProgressUpdated;
+        _tutorServer.OnAnswersSubmitted += HandleAnswersSubmitted;
 
         // ================= Timer =================
         _refreshTimer = new System.Windows.Forms.Timer();
@@ -258,6 +234,200 @@ public sealed class TutorDashboardForm : Form
         }
     }
 
+    private void HandleStudentRegistered(StudentInfo student) => UpsertStudent(student);
+
+    private void HandleHeartbeatReceived(StudentInfo student) => UpsertStudent(student);
+
+    private void HandleStudentDisconnected(StudentInfo student) => RemoveStudent(student.StudentId);
+
+    private void HandleProgressUpdated(StudentProgress progress) => UpdateStudentProgress(progress);
+
+    private void HandleAnswersSubmitted(string studentId, List<StudentAnswer> answers) => UpdateStudentScore(studentId, answers);
+
+    private void UpsertStudent(StudentInfo student)
+    {
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        if (InvokeRequired)
+        {
+            BeginInvoke(new Action(() => UpsertStudent(student)));
+            return;
+        }
+
+        var existing = GetOrCreateStudent(student.StudentId, student.FullName, student.MachineName);
+
+        if (!string.IsNullOrWhiteSpace(student.FullName))
+        {
+            existing.FullName = student.FullName;
+        }
+
+        if (!string.IsNullOrWhiteSpace(student.MachineName))
+        {
+            existing.MachineName = student.MachineName;
+        }
+
+        if (!string.IsNullOrWhiteSpace(student.Status))
+        {
+            existing.Status = student.Status;
+        }
+
+        existing.LastSeenUtc = student.LastSeenUtc;
+        _studentRegistry.Upsert(existing);
+        ResetStudentRow(existing.StudentId);
+    }
+
+    private void UpdateStudentProgress(StudentProgress progress)
+    {
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        if (InvokeRequired)
+        {
+            BeginInvoke(new Action(() => UpdateStudentProgress(progress)));
+            return;
+        }
+
+        var existing = GetOrCreateStudent(progress.StudentId, string.Empty, string.Empty);
+        existing.AnsweredCount = progress.AnsweredCount;
+        existing.Status = progress.Status;
+        existing.LastSeenUtc = DateTime.UtcNow;
+
+        _studentRegistry.Upsert(existing);
+        ResetStudentRow(existing.StudentId);
+    }
+
+    private void UpdateStudentScore(string studentId, List<StudentAnswer> answers)
+    {
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        if (InvokeRequired)
+        {
+            BeginInvoke(new Action(() => UpdateStudentScore(studentId, answers)));
+            return;
+        }
+
+        var existing = GetOrCreateStudent(studentId, string.Empty, string.Empty);
+        existing.AnsweredCount = answers.Count;
+        existing.Status = "Submitted";
+        existing.LastSeenUtc = DateTime.UtcNow;
+
+        var exam = _sessionManager.ActiveSession?.Exam;
+        if (exam is not null && exam.Questions.Count > 0)
+        {
+            existing.Score = CalculateScorePercent(exam, answers);
+        }
+
+        _studentRegistry.Upsert(existing);
+        ResetStudentRow(existing.StudentId);
+    }
+
+    private void RemoveStudent(string studentId)
+    {
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        if (InvokeRequired)
+        {
+            BeginInvoke(new Action(() => RemoveStudent(studentId)));
+            return;
+        }
+
+        _studentRegistry.Remove(studentId);
+
+        for (var i = 0; i < _bindingList.Count; i++)
+        {
+            if (_bindingList[i].StudentId == studentId)
+            {
+                _bindingList.RemoveAt(i);
+                break;
+            }
+        }
+
+        if (_selectedStudent?.StudentId == studentId)
+        {
+            _selectedStudent = null;
+            UpdateButtonStates();
+        }
+    }
+
+    private StudentInfo GetOrCreateStudent(string studentId, string fullName, string machineName)
+    {
+        for (var i = 0; i < _bindingList.Count; i++)
+        {
+            if (_bindingList[i].StudentId == studentId)
+            {
+                return _bindingList[i];
+            }
+        }
+
+        var created = new StudentInfo
+        {
+            StudentId = studentId,
+            FullName = fullName,
+            MachineName = machineName,
+            Status = "Connected",
+            LastSeenUtc = DateTime.UtcNow
+        };
+
+        _bindingList.Add(created);
+        return created;
+    }
+
+    private void ResetStudentRow(string studentId)
+    {
+        for (var i = 0; i < _bindingList.Count; i++)
+        {
+            if (_bindingList[i].StudentId == studentId)
+            {
+                _bindingList.ResetItem(i);
+                break;
+            }
+        }
+    }
+
+    private static int CalculateScorePercent(Exam exam, List<StudentAnswer> answers)
+    {
+        var correctByQuestion = new Dictionary<string, string>();
+        foreach (var question in exam.Questions)
+        {
+            foreach (var choice in question.Choices)
+            {
+                if (choice.IsCorrect)
+                {
+                    correctByQuestion[question.Id] = choice.Id;
+                    break;
+                }
+            }
+        }
+
+        var correctCount = 0;
+        foreach (var answer in answers)
+        {
+            if (correctByQuestion.TryGetValue(answer.QuestionId, out var correctId)
+                && string.Equals(answer.ChoiceId, correctId, StringComparison.OrdinalIgnoreCase))
+            {
+                correctCount++;
+            }
+        }
+
+        if (exam.Questions.Count == 0)
+        {
+            return 0;
+        }
+
+        return (int)Math.Round(correctCount * 100.0 / exam.Questions.Count);
+    }
+
     private void UpdateButtonStates()
     {
         bool enabled = _selectedStudent != null;
@@ -282,15 +452,41 @@ public sealed class TutorDashboardForm : Form
     // ================= Actions =================
     private async void LockStudent(object? sender, EventArgs e)
     {
-        if (_selectedStudent == null) return;
-        var command = new TutorCommand { CommandType = "Lock" };
+        if (_selectedStudent == null)
+        {
+            return;
+        }
+
+        if (!await EnsureServerRunningAsync())
+        {
+            return;
+        }
+
+        var command = new TutorCommand
+        {
+            CommandType = "Lock"
+        };
+
         await _tutorServer.SendCommandToStudentAsync(_selectedStudent.StudentId, command);
     }
 
     private async void UnlockStudent(object? sender, EventArgs e)
     {
-        if (_selectedStudent == null) return;
-        var command = new TutorCommand { CommandType = "Unlock" };
+        if (_selectedStudent == null)
+        {
+            return;
+        }
+
+        if (!await EnsureServerRunningAsync())
+        {
+            return;
+        }
+
+        var command = new TutorCommand
+        {
+            CommandType = "Unlock"
+        };
+
         await _tutorServer.SendCommandToStudentAsync(_selectedStudent.StudentId, command);
     }
 
@@ -298,20 +494,71 @@ public sealed class TutorDashboardForm : Form
     {
         if (_selectedStudent == null) return;
 
-        using var form = new TestSetupForm(_studentRegistry, _tutorServer, _testSessionManager);
+        using var form = new TestSetupForm(_studentRegistry, _tutorServer, _sessionManager);
         form.ShowDialog(this);
     }
 
-    private void StartTest(object? sender, EventArgs e)
+    private async void StartTest(object? sender, EventArgs e)
     {
-        if (_selectedStudent == null) return;
-        MessageBox.Show($"Starting test for {_selectedStudent.FullName}");
+        if (_selectedStudent == null)
+        {
+            return;
+        }
+
+        if (!await EnsureServerRunningAsync())
+        {
+            return;
+        }
+
+        var examPath = PromptForExamPath();
+        if (string.IsNullOrWhiteSpace(examPath))
+        {
+            return;
+        }
+
+        var exam = await JsonFileStore.LoadAsync<Exam>(examPath);
+        if (exam is null || exam.Questions.Count == 0)
+        {
+            MessageBox.Show(this, "Selected exam is empty or invalid.", "Test Setup", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        var durationMinutes = exam.DurationMinutes > 0 ? exam.DurationMinutes : 10;
+        exam.DurationMinutes = durationMinutes;
+
+        var session = _sessionManager.CreateSession(exam, durationMinutes, new[] { _selectedStudent.StudentId });
+
+        var command = new TutorCommand
+        {
+            CommandType = "StartTest",
+            SessionId = session.Id,
+            Exam = exam,
+            DurationMinutes = durationMinutes
+        };
+
+        await _tutorServer.SendCommandToStudentAsync(_selectedStudent.StudentId, command);
     }
 
-    private void StopTest(object? sender, EventArgs e)
+    private async void StopTest(object? sender, EventArgs e)
     {
-        if (_selectedStudent == null) return;
-        MessageBox.Show($"Stopping test for {_selectedStudent.FullName}");
+        if (_selectedStudent == null)
+        {
+            return;
+        }
+
+        if (!await EnsureServerRunningAsync())
+        {
+            return;
+        }
+
+        var command = new TutorCommand
+        {
+            CommandType = "StopTest",
+            SessionId = _sessionManager.ActiveSession?.Id ?? string.Empty
+        };
+
+        await _tutorServer.SendCommandToStudentAsync(_selectedStudent.StudentId, command);
+        _sessionManager.StopSession();
     }
 
     private void OpenLiveTracking(object? sender, EventArgs e)
@@ -330,15 +577,89 @@ public sealed class TutorDashboardForm : Form
         form.ShowDialog(this);
     }
 
+    private async Task<bool> EnsureServerRunningAsync()
+    {
+        if (_tutorServer.IsRunning)
+        {
+            return true;
+        }
+
+        try
+        {
+            await _tutorServer.StartAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"Failed to start the tutor server: {ex.Message}", "Server", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return false;
+        }
+    }
+
+    private string? PromptForExamPath()
+    {
+        using var dialog = new OpenFileDialog
+        {
+            Filter = "Exam JSON (*.json)|*.json|All files (*.*)|*.*",
+            InitialDirectory = FindInitialExamDirectory()
+        };
+
+        if (!string.IsNullOrWhiteSpace(_lastExamPath) && File.Exists(_lastExamPath))
+        {
+            dialog.FileName = _lastExamPath;
+        }
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+        {
+            return null;
+        }
+
+        _lastExamPath = dialog.FileName;
+        return dialog.FileName;
+    }
+
+    private string FindInitialExamDirectory()
+    {
+        if (!string.IsNullOrWhiteSpace(_lastExamPath))
+        {
+            var lastDir = Path.GetDirectoryName(_lastExamPath);
+            if (!string.IsNullOrWhiteSpace(lastDir) && Directory.Exists(lastDir))
+            {
+                return lastDir;
+            }
+        }
+
+        var current = AppContext.BaseDirectory;
+
+        for (var i = 0; i < 6; i++)
+        {
+            var candidate = Path.Combine(current, "samples", "exams");
+            if (Directory.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            var parent = Directory.GetParent(current);
+            if (parent is null)
+            {
+                break;
+            }
+
+            current = parent.FullName;
+        }
+
+        return Environment.CurrentDirectory;
+    }
+
     // ================= Sample Data =================
     private void AddSampleStudents()
     {
         var students = new[]
         {
-            new StudentInfo { StudentId="ST-001", FullName="Ahmed Hassan", MachineName="PC-LAB-01", Status="Active", AnsweredCount=12, Score=85, LastSeenUtc=DateTime.UtcNow.AddSeconds(-5)},
-            new StudentInfo { StudentId="ST-002", FullName="Fatima Mohamed", MachineName="PC-LAB-02", Status="In Test", AnsweredCount=8, Score=72, LastSeenUtc=DateTime.UtcNow.AddSeconds(-30)},
-            new StudentInfo { StudentId="ST-003", FullName="Omar Ali", MachineName="PC-LAB-03", Status="Idle", AnsweredCount=0, Score=0, LastSeenUtc=DateTime.UtcNow.AddMinutes(-2)},
-            new StudentInfo { StudentId="ST-004", FullName="Noor Khalid", MachineName="PC-LAB-04", Status="Active", AnsweredCount=20, Score=95, LastSeenUtc=DateTime.UtcNow.AddSeconds(-15)}
+            new StudentInfo { FullName="Ahmed Hassan", MachineName="PC-LAB-01", Status="Active", AnsweredCount=12, Score=85, LastSeenUtc=DateTime.UtcNow.AddSeconds(-5)},
+            new StudentInfo { FullName="Fatima Mohamed", MachineName="PC-LAB-02", Status="In Test", AnsweredCount=8, Score=72, LastSeenUtc=DateTime.UtcNow.AddSeconds(-30)},
+            new StudentInfo { FullName="Omar Ali", MachineName="PC-LAB-03", Status="Idle", AnsweredCount=0, Score=0, LastSeenUtc=DateTime.UtcNow.AddMinutes(-2)},
+            new StudentInfo { FullName="Noor Khalid", MachineName="PC-LAB-04", Status="Active", AnsweredCount=20, Score=95, LastSeenUtc=DateTime.UtcNow.AddSeconds(-15)}
         };
 
         foreach (var s in students)
@@ -351,7 +672,14 @@ public sealed class TutorDashboardForm : Form
     protected override void Dispose(bool disposing)
     {
         if (disposing)
+        {
+            _tutorServer.OnStudentRegistered -= HandleStudentRegistered;
+            _tutorServer.OnHeartbeatReceived -= HandleHeartbeatReceived;
+            _tutorServer.OnStudentDisconnected -= HandleStudentDisconnected;
+            _tutorServer.OnProgressUpdated -= HandleProgressUpdated;
+            _tutorServer.OnAnswersSubmitted -= HandleAnswersSubmitted;
             _refreshTimer?.Dispose();
+        }
 
         base.Dispose(disposing);
     }
